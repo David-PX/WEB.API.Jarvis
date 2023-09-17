@@ -94,7 +94,7 @@ namespace WEB.API.Jarvis.Controllers
         }
 
         [HttpPost]
-        [Route("login")]
+        [Route("Login")]
         public async Task<IActionResult> Login([FromBody] LoginModel loginModel)
         {
             var user = await _userManager.FindByNameAsync(loginModel.Email);
@@ -131,7 +131,7 @@ namespace WEB.API.Jarvis.Controllers
         }
 
 
-        [HttpPost("resetpassword/{id}")]
+        [HttpPost("ChangePassword/{id}")]
         public async Task<IActionResult> ChangePassword(ResetPassword dto)
         {
             // Validate the input.
