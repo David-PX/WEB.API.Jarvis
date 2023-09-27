@@ -13,6 +13,7 @@ using WEB.API.Jarvis.Models;
 using WEB.API.Jarvis.Models.Authentication.Login;
 using WEB.API.Jarvis.Models.Authentication.ResetPassword;
 using WEB.API.Jarvis.Models.Authentication.SignUp;
+using WEB.API.Jarvis.Utilities;
 
 namespace WEB.API.Jarvis.Controllers
 {
@@ -91,6 +92,15 @@ namespace WEB.API.Jarvis.Controllers
             }
             return StatusCode(StatusCodes.Status500InternalServerError,
                    new Response { Status = "Error", Message = "This user does not exist" });
+        }
+
+        [HttpGet("pruebaLog")]
+        public async Task<IActionResult> PruebaLog()
+        {
+            LoggerService.Info("Prueba1");
+                    return StatusCode(StatusCodes.Status200OK,
+                        new Response { Status = " Success", Message = "Email Verified Successfully" });
+
         }
 
         [HttpPost]

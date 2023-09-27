@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Hams.WEB.API\Mail.Service\Mail.Service.csproj" />
+    <ProjectReference Include="..\Mail.Service\Mail.Service.csproj" />
   </ItemGroup>
 
 </Project>
