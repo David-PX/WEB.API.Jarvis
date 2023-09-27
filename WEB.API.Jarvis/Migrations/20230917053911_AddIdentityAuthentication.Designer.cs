@@ -11,7 +11,7 @@ using WEB.API.Jarvis.Context;
 
 namespace WEB.API.Jarvis.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(JarvisDbContext))]
     [Migration("20230917053911_AddIdentityAuthentication")]
     partial class AddIdentityAuthentication
     {

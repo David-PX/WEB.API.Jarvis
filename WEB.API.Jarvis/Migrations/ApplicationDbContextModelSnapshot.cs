@@ -10,7 +10,7 @@ using WEB.API.Jarvis.Context;
 
 namespace WEB.API.Jarvis.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(JarvisDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

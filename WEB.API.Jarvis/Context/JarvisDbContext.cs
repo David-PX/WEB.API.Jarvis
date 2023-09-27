@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using WEB.API.Jarvis.Models;
 
-namespace WEB.API.Jarvis.Models;
+namespace WEB.API.Jarvis.Context;
 
 public partial class JarvisDbContext : DbContext
 {

@@ -25,9 +25,9 @@ namespace WEB.API.Jarvis.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
-        private readonly ApplicationDbContext _context;
+        private readonly JarvisDbContext _context;
 
-        public AuthenticationController(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager, IConfiguration configuration, IEmailService emailService, ApplicationDbContext context)
+        public AuthenticationController(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager, IConfiguration configuration, IEmailService emailService, JarvisDbContext context)
         {
             _roleManager = roleManager;
             _userManager = userManager;
