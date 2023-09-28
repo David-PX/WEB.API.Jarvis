@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33815.320
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WEB.API.Jarvis", "WEB.API.Jarvis\WEB.API.Jarvis.csproj", "{4A024E49-FF1C-411A-B334-AFDF5B90C82A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jarvis.WEB.API", "WEB.API.Jarvis\Jarvis.WEB.API.csproj", "{4A024E49-FF1C-411A-B334-AFDF5B90C82A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mail.Service", "Mail.Service\Mail.Service.csproj", "{82960A8A-7FDE-4349-9391-4B8F6887A83E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jarvis.WEB.Mail.Service", "Mail.Service\Jarvis.WEB.Mail.Service.csproj", "{82960A8A-7FDE-4349-9391-4B8F6887A83E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jarvis.WEB.API.DTOs", "Jarvis.WEB.API.DTOs\Jarvis.WEB.API.DTOs.csproj", "{B97A1C72-CAC5-411E-B832-4766332D4AE1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{82960A8A-7FDE-4349-9391-4B8F6887A83E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82960A8A-7FDE-4349-9391-4B8F6887A83E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82960A8A-7FDE-4349-9391-4B8F6887A83E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B97A1C72-CAC5-411E-B832-4766332D4AE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B97A1C72-CAC5-411E-B832-4766332D4AE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B97A1C72-CAC5-411E-B832-4766332D4AE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B97A1C72-CAC5-411E-B832-4766332D4AE1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
