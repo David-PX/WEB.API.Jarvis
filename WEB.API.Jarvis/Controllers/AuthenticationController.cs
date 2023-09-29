@@ -14,6 +14,7 @@ using WEB.API.Jarvis.Models.Authentication.Login;
 using WEB.API.Jarvis.Models.Authentication.ResetPassword;
 using WEB.API.Jarvis.Models.Authentication.SignUp;
 using WEB.API.Jarvis.Utilities;
+using Jarvis.WEB.API.DTOs.DTOs.Users;
 
 namespace WEB.API.Jarvis.Controllers
 {
@@ -36,6 +37,45 @@ namespace WEB.API.Jarvis.Controllers
             _context = context;
         }
 
+        //[HttpPost]
+        //public async Task<IActionResult> CreateEmployeeUser([FromBody] EmployeeUserDTO user)
+        //{
+        //    var userExist = await _userManager.FindByEmailAsync(user.Email);
+        //    if (userExist != null)
+        //    {
+        //        return StatusCode(StatusCodes.Status403Forbidden,
+        //            new Response { Status = "Error", Message = "User already exists!" });
+        //    }
+
+        //    IdentityUser newUser = new()
+        //    {
+        //        Email = user.Email,
+        //        SecurityStamp = Guid.NewGuid().ToString(),
+        //        UserName = user.Email
+        //    };
+
+        //    var result = await _userManager.CreateAsync(newUser, user.Password);
+        //    if (!result.Succeeded)
+        //    {
+        //        StatusCode(StatusCodes.Status500InternalServerError,
+        //            new Response { Status = "Error", Message = "User Failed to Create!" });
+        //    }
+
+        //    await _userManager.AddToRoleAsync(newUser, "Huesped");
+        //    await _context.SaveChangesAsync();
+
+        //    //Add Toke to verify the email...
+        //    var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+        //    var confirmationLink = Url.Action(nameof(ConfirmEmail), "Authentication", new { token, email = newUser.Email }, Request.Scheme);
+        //    var message = new Message(new string[] { user.Email! }, "Confirmation Email Link", confirmationLink!);
+        //    _emailService.SendEmail(message);
+
+
+        //    return StatusCode(StatusCodes.Status201Created,
+        //            new Response { Status = "Success", Message = "User Created Successfully!" });
+
+        //}
+
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] RegisterUser user)
         {
@@ -53,8 +93,6 @@ namespace WEB.API.Jarvis.Controllers
                 UserName = user.Email
             };
 
-
-
             var result = await _userManager.CreateAsync(newUser, user.Password);
             if (!result.Succeeded)
             {
@@ -62,7 +100,7 @@ namespace WEB.API.Jarvis.Controllers
                     new Response { Status = "Error", Message = "User Failed to Create!" });
             }
 
-            await _userManager.AddToRoleAsync(newUser, "Huesped");
+            await _userManager.AddToRoleAsync(newUser, "ADMIN");
             await _context.SaveChangesAsync();
 
             //Add Toke to verify the email...
