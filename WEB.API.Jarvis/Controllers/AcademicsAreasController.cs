@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Jarvis.WEB.API.Context;
 using Jarvis.WEB.API.Models;
@@ -28,31 +29,60 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AcademicArea>>> GetAcademicAreas()
         {
-            LoggerService.LogActionStart("Nombre de la Acción", "Solicitante", "Tipo de Credencial", "Credencial");
+            string methodName = "GetAcademicAreas";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             if (_context.AcademicAreas == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Academic Area Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Academic Area Not Found"
+                                    }
+                    );
             }
-            LoggerService.LogActionEnd("Nombre de la Acción", DateTime.Now);
-            return await _context.AcademicAreas.ToListAsync();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return await _context.AcademicAreas.Where(academicArea => academicArea.DeletedDate == null).ToListAsync();
         }
 
         // GET: api/AcademicsAreas/5
         [HttpGet("{id}")]
         public async Task<ActionResult<AcademicArea>> GetAcademicArea(string id)
         {
-            LoggerService.LogActionStart("Nombre de la Acción", "Solicitante", "Tipo de Credencial", "Credencial");
+            string methodName = "GetAcademicArea";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
             if (_context.AcademicAreas == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Academic Area Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Academic Area Not Found"
+                                    }
+                    );
             }
             var academicArea = await _context.AcademicAreas.FindAsync(id);
 
             if (academicArea == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Academic Area Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Academic Area Not Found"
+                                    }
+                    );
             }
-
+            LoggerService.LogActionEnd(methodName, startTime);
             return academicArea;
         }
 
@@ -61,11 +91,25 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAcademicArea(string id, AcademicArea academicArea)
         {
-            LoggerService.LogActionStart("Nombre de la Acción", "Solicitante", "Tipo de Credencial", "Credencial");
+            string methodName = "PutAcademicArea";
+            DateTime startTime = DateTime.Now;
+
+            LoggerService.LogActionStart(methodName, Request);
             if (id != academicArea.AcademicAreaId)
             {
-                return BadRequest();
+                LoggerService.LogException(methodName, Request, "Academic Area Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The ID of Academic Area are not the same"
+                                    }
+                    );
             }
+
+            academicArea.UpdatedDate = DateTime.Now;
+            academicArea.UpdatedBy = Request.Headers["Requester-Jarvis"].ToString();
 
             _context.Entry(academicArea).State = EntityState.Modified;
 
@@ -73,19 +117,42 @@ namespace WEB.API.Jarvis.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
                 if (!AcademicAreaExists(id))
                 {
-                    return NotFound();
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status404NotFound,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Academic Area Not Found"
+                                        }
+                        );
                 }
                 else
                 {
-                    throw;
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status409Conflict,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Academic Area Conflict With Db Exception"
+                                        }
+                        );
                 }
             }
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                                new Response
+                                {
+                                    Status = "Ok",
+                                    Message = "Academic Area Updated Sucessfully"
+                                }
+                );
         }
 
         // POST: api/AcademicsAreas
@@ -93,50 +160,104 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost]
         public async Task<ActionResult<AcademicArea>> PostAcademicArea(AcademicArea academicArea)
         {
-            LoggerService.LogActionStart("Nombre de la Acción", "Solicitante", "Tipo de Credencial", "Credencial");
+            string methodName = "PostAcademicArea";
+
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             if (_context.AcademicAreas == null)
             {
-                return Problem("Entity set 'JarvisDbContext.AcademicAreas'  is null.");
+                LoggerService.LogException(methodName, Request, "Academic Area Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status406NotAcceptable,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The Academic Area was not send"
+                                    }
+                    );
             }
+
+            academicArea.CreatedBy = Request.Headers["Requester-Jarvis"].ToString();
+            academicArea.CreatedDate = DateTime.Now;
             _context.AcademicAreas.Add(academicArea);
+
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                if (AcademicAreaExists(academicArea.AcademicAreaId))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
+                LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status409Conflict,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Academic Area Conflict With Db Exception"
+                                    }
+                    );
+
             }
 
-            return CreatedAtAction("GetAcademicArea", new { id = academicArea.AcademicAreaId }, academicArea);
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status201Created,
+                                new Response
+                                {
+                                    Status = "Created",
+                                    Message = "Academic Area Created Sucessfully"
+                                }
+                );
         }
 
         // DELETE: api/AcademicsAreas/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAcademicArea(string id)
         {
-            LoggerService.LogActionStart("Nombre de la Acción", "Solicitante", "Tipo de Credencial", "Credencial");
+            string methodName = "DeleteAcademicArea";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             if (_context.AcademicAreas == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Academic Area Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Academic Area Not Found"
+                                    }
+                    );
             }
             var academicArea = await _context.AcademicAreas.FindAsync(id);
             if (academicArea == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Academic Area Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Academic Area Not Found"
+                                    }
+                    );
             }
 
-            _context.AcademicAreas.Remove(academicArea);
+            academicArea.DeletedBy = Request.Headers["Requester-Jarvis"].ToString();
+            academicArea.DeletedDate = DateTime.Now;
+
+            _context.Entry(academicArea).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status202Accepted,
+                                new Response
+                                {
+                                    Status = "Deleted",
+                                    Message = "Academic Area Deleted Sucessfully"
+                                }
+                );
         }
 
         private bool AcademicAreaExists(string id)

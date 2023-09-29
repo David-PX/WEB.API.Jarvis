@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WEB.API.Jarvis.Context;
 using WEB.API.Jarvis.Models;
+using WEB.API.Jarvis.Utilities;
 
 namespace WEB.API.Jarvis.Controllers
 {
@@ -27,28 +28,63 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Attendance>>> GetAttendances()
         {
-          if (_context.Attendances == null)
-          {
-              return NotFound();
-          }
-            return await _context.Attendances.ToListAsync();
+            string methodName = "GetAttendances";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Attendances == null)
+            {
+                LoggerService.LogException(methodName, Request, "Attendance Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Attendance Not Found"
+                                    }
+                    );
+            }
+
+            LoggerService.LogActionEnd(methodName, startTime);
+            return await _context.Attendances.Where(attendance => attendance.DeletedDate == null).ToListAsync();
         }
 
         // GET: api/Attendances/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Attendance>> GetAttendance(Guid id)
         {
-          if (_context.Attendances == null)
-          {
-              return NotFound();
-          }
+            string methodName = "GetAttendance";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Attendances == null)
+            {
+                LoggerService.LogException(methodName, Request, "Attendance Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Attendance Not Found"
+                                    }
+                    );
+            }
             var attendance = await _context.Attendances.FindAsync(id);
 
             if (attendance == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Attendance Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Attendance Not Found"
+                                    }
+                    );
             }
 
+            LoggerService.LogActionEnd(methodName, startTime);
             return attendance;
         }
 
@@ -57,10 +93,25 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAttendance(Guid id, Attendance attendance)
         {
+            string methodName = "PutAttendance";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
             if (id != attendance.AttendanceId)
             {
-                return BadRequest();
+                LoggerService.LogException(methodName, Request, "Attendance Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The ID of Attendance are not the same"
+                                    }
+                    );
             }
+
+
+            attendance.UpdatedDate = DateTime.Now;
+            attendance.UpdatedBy = Request.Headers["Requester-Jarvis"].ToString();
 
             _context.Entry(attendance).State = EntityState.Modified;
 
@@ -68,19 +119,42 @@ namespace WEB.API.Jarvis.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
                 if (!AttendanceExists(id))
                 {
-                    return NotFound();
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status404NotFound,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Attendance Not Found"
+                                        }
+                        );
                 }
                 else
                 {
-                    throw;
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status409Conflict,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Attendance Conflict With Db Exception"
+                                        }
+                        );
                 }
             }
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                                new Response
+                                {
+                                    Status = "Ok",
+                                    Message = "Attendance Updated Sucessfully"
+                                }
+                );
         }
 
         // POST: api/Attendances
@@ -88,48 +162,104 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost]
         public async Task<ActionResult<Attendance>> PostAttendance(Attendance attendance)
         {
-          if (_context.Attendances == null)
-          {
-              return Problem("Entity set 'JarvisDbContext.Attendances'  is null.");
-          }
+            string methodName = "PostAttendance";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Attendances == null)
+            {
+                LoggerService.LogException(methodName, Request, "Attendance Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status406NotAcceptable,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The Attendance was not send"
+                                    }
+                    );
+            }
+
+            attendance.AttendanceId = Guid.NewGuid();
+            attendance.CreatedBy = Request.Headers["Requester-Jarvis"].ToString();
+            attendance.CreatedDate = DateTime.Now;
+
             _context.Attendances.Add(attendance);
+
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                if (AttendanceExists(attendance.AttendanceId))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
+                LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status409Conflict,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Attendance Conflict With Db Exception"
+                                    }
+                    );
             }
 
-            return CreatedAtAction("GetAttendance", new { id = attendance.AttendanceId }, attendance);
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status201Created,
+                                new Response
+                                {
+                                    Status = "Created",
+                                    Message = "Attendance Created Sucessfully"
+                                }
+                );
         }
 
         // DELETE: api/Attendances/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAttendance(Guid id)
         {
+            string methodName = "DeleteAttendance";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             if (_context.Attendances == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Attendance Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Attendance Not Found"
+                                    }
+                    );
             }
             var attendance = await _context.Attendances.FindAsync(id);
             if (attendance == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Attendance Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Attendance Not Found"
+                                    }
+                    );
             }
+            attendance.DeletedBy = Request.Headers["Requester-Jarvis"].ToString();
+            attendance.DeletedDate = DateTime.Now;
 
-            _context.Attendances.Remove(attendance);
+            _context.Entry(attendance).State = EntityState.Modified;
+
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status202Accepted,
+                                new Response
+                                {
+                                    Status = "Deleted",
+                                    Message = "Attendance Deleted Sucessfully"
+                                }
+                );
         }
 
         private bool AttendanceExists(Guid id)

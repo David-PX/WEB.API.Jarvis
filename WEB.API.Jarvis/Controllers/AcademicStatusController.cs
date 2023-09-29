@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Jarvis.WEB.API.Context;
 using Jarvis.WEB.API.Models;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WEB.API.Jarvis.Context;
 using WEB.API.Jarvis.Models;
+using WEB.API.Jarvis.Utilities;
 
 namespace WEB.API.Jarvis.Controllers
 {
@@ -27,28 +29,62 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AcademicStatus>>> GetAcademicStatuses()
         {
-          if (_context.AcademicStatuses == null)
-          {
-              return NotFound();
-          }
-            return await _context.AcademicStatuses.ToListAsync();
+            string methodName = "GetAcademicStatuses";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.AcademicStatuses == null)
+            {
+                LoggerService.LogException(methodName, Request, "Academic Status Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Academic Status Not Found"
+                                    }
+                    );
+            }
+
+            LoggerService.LogActionEnd(methodName, startTime);
+            return await _context.AcademicStatuses.Where(academicStatus => academicStatus.DeletedDate == null).ToListAsync();
         }
 
         // GET: api/AcademicStatus/5
         [HttpGet("{id}")]
         public async Task<ActionResult<AcademicStatus>> GetAcademicStatus(Guid id)
         {
-          if (_context.AcademicStatuses == null)
-          {
-              return NotFound();
-          }
+            string methodName = "GetAcademicStatus";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+            if (_context.AcademicStatuses == null)
+            {
+                LoggerService.LogException(methodName, Request, "Academic Status Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Academic Status Not Found"
+                                    }
+                    );
+            }
             var academicStatus = await _context.AcademicStatuses.FindAsync(id);
 
             if (academicStatus == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Academic Status Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Academic Status Not Found"
+                                    }
+                    );
             }
 
+            LoggerService.LogActionEnd(methodName, startTime);
             return academicStatus;
         }
 
@@ -57,10 +93,25 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAcademicStatus(Guid id, AcademicStatus academicStatus)
         {
+            string methodName = "PutAcademicStatus";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             if (id != academicStatus.AcademicStatusId)
             {
-                return BadRequest();
+                LoggerService.LogException(methodName, Request, "Academic Status Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The ID of Academic Status are not the same"
+                                    }
+                    );
             }
+
+            academicStatus.UpdatedDate = DateTime.Now;
+            academicStatus.UpdatedBy = Request.Headers["Requester-Jarvis"].ToString();
 
             _context.Entry(academicStatus).State = EntityState.Modified;
 
@@ -68,19 +119,42 @@ namespace WEB.API.Jarvis.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
                 if (!AcademicStatusExists(id))
                 {
-                    return NotFound();
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status404NotFound,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Academic Status Not Found"
+                                        }
+                        );
                 }
                 else
                 {
-                    throw;
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status409Conflict,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Academic Status Conflict With Db Exception"
+                                        }
+                        );
                 }
             }
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                                new Response
+                                {
+                                    Status = "Ok",
+                                    Message = "Academic Status Updated Sucessfully"
+                                }
+                );
         }
 
         // POST: api/AcademicStatus
@@ -88,48 +162,106 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost]
         public async Task<ActionResult<AcademicStatus>> PostAcademicStatus(AcademicStatus academicStatus)
         {
-          if (_context.AcademicStatuses == null)
-          {
-              return Problem("Entity set 'JarvisDbContext.AcademicStatuses'  is null.");
-          }
+            string methodName = "PostAcademicStatus";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.AcademicStatuses == null)
+            {
+                LoggerService.LogException(methodName, Request, "Academic Status Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status406NotAcceptable,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The Academic Status was not send"
+                                    }
+                    );
+            }
+
+            academicStatus.AcademicStatusId = Guid.NewGuid();
+            academicStatus.CreatedBy = Request.Headers["Requester-Jarvis"].ToString();
+            academicStatus.CreatedDate = DateTime.Now;
+
             _context.AcademicStatuses.Add(academicStatus);
+
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                if (AcademicStatusExists(academicStatus.AcademicStatusId))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
+
+                LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status409Conflict,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Academic Status Conflict With Db Exception"
+                                    }
+                    );
+
             }
 
-            return CreatedAtAction("GetAcademicStatus", new { id = academicStatus.AcademicStatusId }, academicStatus);
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status201Created,
+                                new Response
+                                {
+                                    Status = "Created",
+                                    Message = "Academic Status Created Sucessfully"
+                                }
+                );
         }
 
         // DELETE: api/AcademicStatus/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAcademicStatus(Guid id)
         {
+            string methodName = "GetAcademicStatuss";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             if (_context.AcademicStatuses == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Academic Status Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Academic Status Not Found"
+                                    }
+                    );
             }
             var academicStatus = await _context.AcademicStatuses.FindAsync(id);
             if (academicStatus == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Academic Status Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Academic Status Not Found"
+                                    }
+                    );
             }
 
-            _context.AcademicStatuses.Remove(academicStatus);
+            academicStatus.DeletedBy = Request.Headers["Requester-Jarvis"].ToString();
+            academicStatus.DeletedDate = DateTime.Now;
+
+            _context.Entry(academicStatus).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status202Accepted,
+                                new Response
+                                {
+                                    Status = "Deleted",
+                                    Message = "Academic Status Deleted Sucessfully"
+                                }
+                );
         }
 
         private bool AcademicStatusExists(Guid id)

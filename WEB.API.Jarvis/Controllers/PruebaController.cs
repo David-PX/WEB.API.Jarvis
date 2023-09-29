@@ -15,7 +15,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet("pruebaLog")]
         public async Task<IActionResult> PruebaLog()
         {
-            LoggerService.LogActionStart("Nombre de la Acción", "Solicitante", "Tipo de Credencial", "Credencial");
+            LoggerService.LogActionStart("Nombre de la Acción", Request);
             return StatusCode(StatusCodes.Status200OK,
                 new Response { Status = " Success", Message = "Email Verified Successfully" });
 
