@@ -5,32 +5,36 @@ namespace WEB.API.Jarvis.Utilities
 {
     public static class LoggerService
     {
-        public static void Info(string message)
+        
+        public static void LogActionStart(string action, string requester, string externalCredentialType, string externalCredential)
         {
-            DateTime executionTime = DateTime.Now;
-            //"BOTService.Customer | GetCustomer Start Request" +
-            //                      "| Requester: {0}" +
-            //                      "| ExternalCredentialType: {1}" +
-            //                      "| ExternalCredential: {2}" +
-            //                      "| Execution Time: {3}",
+            var log = new LoggerConfiguration()
+                            .WriteTo.File(new JsonFormatter(renderMessage: true), "C:/Logs/log.json")
+                            .CreateLogger();
+            DateTime startTime = DateTime.Now;
 
+            log.Information(
+                "Action: {Action} | Requester: {Requester} | ExternalCredentialType: {CredentialType} | Start Time: {StartTime}",
+                action,
+                requester,
+                externalCredentialType,
+                startTime
+            );
+        }
 
+        public static void LogActionEnd(string action, DateTime startTime)
+        {
+            var log = new LoggerConfiguration()
+                            .WriteTo.File(new JsonFormatter(renderMessage: true), "C:/Logs/log.json")
+                            .CreateLogger();
 
-            // Instantiate the logger
-            var log = new LoggerConfiguration()  // using Serilog;
+            DateTime endTime = DateTime.Now;
 
-                // using Serilog.Formatting.Json;
-                .WriteTo.File(new JsonFormatter(renderMessage: true), "C:/Logs/log.json")
-
-                // using Serilog.Formatting.Compact;
-                // .WriteTo.File(new RenderedCompactJsonFormatter(), "log.json")
-
-                .CreateLogger();
-
-            // An example
-           
-            
-            log.Information($"{message} | Execution Time: {DateTime.Now.Subtract(executionTime).TotalSeconds:N2} | "  );
+            log.Information(
+                "Action: {Action} | Execution Time: {ExecutionTime} seconds",
+                action,
+                endTime.Subtract(startTime).TotalSeconds.ToString("N2")
+            );
         }
     }
 }
