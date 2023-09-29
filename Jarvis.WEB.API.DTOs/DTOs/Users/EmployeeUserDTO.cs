@@ -16,6 +16,7 @@ namespace Jarvis.WEB.API.DTOs.DTOs.Users
         [Required(ErrorMessage = "Email is required")]
         public string? Email { get; set; }
         [Required(ErrorMessage = "Supervisor is required")]
+        public string? Role { get; set; }
         public Guid? SupervisorId { get; set; }
 
         public string? UserId { get; set; }

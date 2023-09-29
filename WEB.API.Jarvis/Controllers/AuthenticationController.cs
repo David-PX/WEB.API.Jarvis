@@ -15,6 +15,9 @@ using WEB.API.Jarvis.Models.Authentication.ResetPassword;
 using WEB.API.Jarvis.Models.Authentication.SignUp;
 using WEB.API.Jarvis.Utilities;
 using Jarvis.WEB.API.DTOs.DTOs.Users;
+using Jarvis.WEB.API.Utilities;
+using Jarvis.WEB.API.Models;
+using Jarvis.WEB.API.Context;
 
 namespace WEB.API.Jarvis.Controllers
 {
@@ -27,54 +30,91 @@ namespace WEB.API.Jarvis.Controllers
         private readonly IConfiguration _configuration;
         private readonly IEmailService _emailService;
         private readonly JarvisDbContext _context;
+        private readonly JarvisFullDbContext _generalContext;
 
-        public AuthenticationController(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager, IConfiguration configuration, IEmailService emailService, JarvisDbContext context)
+        public AuthenticationController(RoleManager<IdentityRole> roleManager, 
+                                        UserManager<IdentityUser> userManager, 
+                                        IConfiguration configuration, 
+                                        IEmailService emailService, 
+                                        JarvisDbContext context, 
+                                        JarvisFullDbContext generalContext)
         {
             _roleManager = roleManager;
             _userManager = userManager;
             _configuration = configuration;
             _emailService = emailService;
             _context = context;
+            _generalContext = generalContext;
         }
 
-        //[HttpPost]
-        //public async Task<IActionResult> CreateEmployeeUser([FromBody] EmployeeUserDTO user)
-        //{
-        //    var userExist = await _userManager.FindByEmailAsync(user.Email);
-        //    if (userExist != null)
-        //    {
-        //        return StatusCode(StatusCodes.Status403Forbidden,
-        //            new Response { Status = "Error", Message = "User already exists!" });
-        //    }
+        [HttpPost]
+        public async Task<IActionResult> CreateEmployeeUser([FromBody] EmployeeUserDTO user)
+        {
+            var userExist = await _userManager.FindByEmailAsync(user.Email);
+            if (userExist != null)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden,
+                    new Response { Status = "Error", Message = "User already exists!" });
+            }
 
-        //    IdentityUser newUser = new()
-        //    {
-        //        Email = user.Email,
-        //        SecurityStamp = Guid.NewGuid().ToString(),
-        //        UserName = user.Email
-        //    };
+            IdentityUser newUser = new()
+            {
+                Email = user.Email,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                UserName = user.Email
+            };
 
-        //    var result = await _userManager.CreateAsync(newUser, user.Password);
-        //    if (!result.Succeeded)
-        //    {
-        //        StatusCode(StatusCodes.Status500InternalServerError,
-        //            new Response { Status = "Error", Message = "User Failed to Create!" });
-        //    }
+            string provisionalPwd = PwdGenerator.GetRandomPassword();
 
-        //    await _userManager.AddToRoleAsync(newUser, "Huesped");
-        //    await _context.SaveChangesAsync();
+            try
+            {
+                var result = await _userManager.CreateAsync(newUser, provisionalPwd);
+                if (!result.Succeeded)
+                {
+                    StatusCode(StatusCodes.Status500InternalServerError,
+                        new Response { Status = "Error", Message = "User Failed to Create!" });
+                }
+                string employeeRole = (user.Role == "" || user.Role == null) ? "Employee" : user.Role;
 
-        //    //Add Toke to verify the email...
-        //    var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-        //    var confirmationLink = Url.Action(nameof(ConfirmEmail), "Authentication", new { token, email = newUser.Email }, Request.Scheme);
-        //    var message = new Message(new string[] { user.Email! }, "Confirmation Email Link", confirmationLink!);
-        //    _emailService.SendEmail(message);
+                await _userManager.AddToRoleAsync(newUser, employeeRole);
+
+                await _context.SaveChangesAsync();
 
 
-        //    return StatusCode(StatusCodes.Status201Created,
-        //            new Response { Status = "Success", Message = "User Created Successfully!" });
+                var newEmployee = new Employee
+                {
+                    EmployeeId = Guid.NewGuid(),
+                    SupervisorId = user.SupervisorId,
+                    UserId = newUser.Id,
+                    AcademicAreaId = user.AcademicAreaId,
+                    CreatedDate = DateTime.Now,
+                    CreatedBy = "TEXT",
+                    UpdatedDate = DateTime.Now,
+                    UpdatedBy = "TEST"
+                };
 
-        //}
+                _generalContext.Employees.Add(newEmployee);
+                await _generalContext.SaveChangesAsync();
+
+                //Add Toke to verify the email...
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                var confirmationLink = Url.Action(nameof(ConfirmEmail), "Authentication", new { token, email = newUser.Email }, Request.Scheme);
+                var message = new Message(new string[] { user.Email! }, "Activate Account Email", $"Hola {user.Names} \n El siguiente es tu link de confirmación " +
+                                                                                                  $"{confirmationLink} \n y la siguiente es tu contraseña provisional: " +
+                                                                                                  $"{provisionalPwd} \n Por favor cambiarla al momento de ingresar");
+
+                _emailService.SendEmail(message);
+
+
+                return StatusCode(StatusCodes.Status201Created,
+                        new Response { Status = "Success", Message = "User Created Successfully!" });
+            }
+            catch (Exception ex) 
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                        new Response { Status = "Exception", Message = "Something bad happened" });
+            }
+        }
 
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] RegisterUser user)
@@ -100,7 +140,7 @@ namespace WEB.API.Jarvis.Controllers
                     new Response { Status = "Error", Message = "User Failed to Create!" });
             }
 
-            await _userManager.AddToRoleAsync(newUser, "ADMIN");
+            await _userManager.AddToRoleAsync(newUser, "GENERAL_ADMIN");
             await _context.SaveChangesAsync();
 
             //Add Toke to verify the email...
