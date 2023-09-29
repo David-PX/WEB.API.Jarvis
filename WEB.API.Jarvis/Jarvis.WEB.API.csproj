@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Jarvis.WEB.API.DTOs\Jarvis.WEB.API.DTOs.csproj" />
     <ProjectReference Include="..\Mail.Service\Jarvis.WEB.Mail.Service.csproj" />
   </ItemGroup>
 
