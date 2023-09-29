@@ -40,7 +40,7 @@ namespace WEB.API.Jarvis.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterUser user)
         {
             var userExist = await _userManager.FindByEmailAsync(user.Email);
-            if (userExist != null) 
+            if (userExist != null)
             {
                 return StatusCode(StatusCodes.Status403Forbidden,
                     new Response { Status = "Error", Message = "User already exists!" });
@@ -53,7 +53,7 @@ namespace WEB.API.Jarvis.Controllers
                 UserName = user.Email
             };
 
-            
+
 
             var result = await _userManager.CreateAsync(newUser, user.Password);
             if (!result.Succeeded)
@@ -62,7 +62,7 @@ namespace WEB.API.Jarvis.Controllers
                     new Response { Status = "Error", Message = "User Failed to Create!" });
             }
 
-            await _userManager.AddToRoleAsync(newUser,"Huesped");
+            await _userManager.AddToRoleAsync(newUser, "Huesped");
             await _context.SaveChangesAsync();
 
             //Add Toke to verify the email...
@@ -81,7 +81,7 @@ namespace WEB.API.Jarvis.Controllers
         public async Task<IActionResult> ConfirmEmail(string token, string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
-            if(user != null)
+            if (user != null)
             {
                 var result = await _userManager.ConfirmEmailAsync(user, token);
                 if (result.Succeeded)
@@ -97,9 +97,9 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet("pruebaLog")]
         public async Task<IActionResult> PruebaLog()
         {
-            LoggerService.Info("Prueba1");
-                    return StatusCode(StatusCodes.Status200OK,
-                        new Response { Status = " Success", Message = "Email Verified Successfully" });
+            //LoggerService.Info("Prueba1");
+            return StatusCode(StatusCodes.Status200OK,
+                new Response { Status = " Success", Message = "Email Verified Successfully" });
 
         }
 
@@ -108,7 +108,7 @@ namespace WEB.API.Jarvis.Controllers
         public async Task<IActionResult> Login([FromBody] LoginModel loginModel)
         {
             var user = await _userManager.FindByNameAsync(loginModel.Email);
-            if (user != null && await _userManager.CheckPasswordAsync(user, loginModel.Password)) 
+            if (user != null && await _userManager.CheckPasswordAsync(user, loginModel.Password))
             {
                 var authClaims = new List<Claim>
                 {
@@ -118,7 +118,7 @@ namespace WEB.API.Jarvis.Controllers
 
                 var userRoles = await _userManager.GetRolesAsync(user);
 
-                foreach(var role in userRoles)
+                foreach (var role in userRoles)
                 {
                     authClaims.Add(new Claim(ClaimTypes.Role, role));
                 }
@@ -127,7 +127,7 @@ namespace WEB.API.Jarvis.Controllers
 
                 //var userInfo = await _context.Guests.FirstOrDefaultAsync(x => x.UserID == user.Id);
 
-                return Ok(new 
+                return Ok(new
                 {
                     //id = userInfo.ID,
                     //names = userInfo.Names,

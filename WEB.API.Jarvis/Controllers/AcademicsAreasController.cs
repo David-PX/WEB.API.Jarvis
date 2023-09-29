@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WEB.API.Jarvis.Context;
 using WEB.API.Jarvis.Models;
+using WEB.API.Jarvis.Utilities;
 
 namespace WEB.API.Jarvis.Controllers
 {
@@ -27,10 +28,12 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AcademicArea>>> GetAcademicAreas()
         {
-          if (_context.AcademicAreas == null)
-          {
-              return NotFound();
-          }
+            LoggerService.LogActionStart("Nombre de la Acción", "Solicitante", "Tipo de Credencial", "Credencial");
+            if (_context.AcademicAreas == null)
+            {
+                return NotFound();
+            }
+            LoggerService.LogActionEnd("Nombre de la Acción", DateTime.Now);
             return await _context.AcademicAreas.ToListAsync();
         }
 
@@ -38,10 +41,11 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<AcademicArea>> GetAcademicArea(string id)
         {
-          if (_context.AcademicAreas == null)
-          {
-              return NotFound();
-          }
+            LoggerService.LogActionStart("Nombre de la Acción", "Solicitante", "Tipo de Credencial", "Credencial");
+            if (_context.AcademicAreas == null)
+            {
+                return NotFound();
+            }
             var academicArea = await _context.AcademicAreas.FindAsync(id);
 
             if (academicArea == null)
@@ -57,6 +61,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAcademicArea(string id, AcademicArea academicArea)
         {
+            LoggerService.LogActionStart("Nombre de la Acción", "Solicitante", "Tipo de Credencial", "Credencial");
             if (id != academicArea.AcademicAreaId)
             {
                 return BadRequest();
@@ -88,10 +93,11 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost]
         public async Task<ActionResult<AcademicArea>> PostAcademicArea(AcademicArea academicArea)
         {
-          if (_context.AcademicAreas == null)
-          {
-              return Problem("Entity set 'JarvisDbContext.AcademicAreas'  is null.");
-          }
+            LoggerService.LogActionStart("Nombre de la Acción", "Solicitante", "Tipo de Credencial", "Credencial");
+            if (_context.AcademicAreas == null)
+            {
+                return Problem("Entity set 'JarvisDbContext.AcademicAreas'  is null.");
+            }
             _context.AcademicAreas.Add(academicArea);
             try
             {
@@ -116,6 +122,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAcademicArea(string id)
         {
+            LoggerService.LogActionStart("Nombre de la Acción", "Solicitante", "Tipo de Credencial", "Credencial");
             if (_context.AcademicAreas == null)
             {
                 return NotFound();
