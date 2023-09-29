@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
+using Jarvis.WEB.API.DTOs.DTOs.City;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,21 +17,26 @@ namespace WEB.API.Jarvis.Controllers
     public class CitiesController : ControllerBase
     {
         private readonly JarvisDbContext _context;
+        private readonly IMapper _mapper;
 
-        public CitiesController(JarvisDbContext context)
+        public CitiesController(JarvisDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         // GET: api/Cities
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<City>>> GetCities()
+        public async Task<ActionResult<CityDTO>> GetCities()
         {
-          if (_context.Cities == null)
-          {
-              return NotFound();
-          }
-            return await _context.Cities.ToListAsync();
+            var cities = await _context.Cities.ToListAsync();
+            if (cities == null)
+            {
+                return NotFound();
+            }
+            var citiesDTO = _mapper.Map<CityDTO>(cities);
+
+            return citiesDTO;
         }
 
         // GET: api/Cities/5
