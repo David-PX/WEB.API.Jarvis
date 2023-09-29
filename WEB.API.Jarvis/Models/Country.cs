@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WEB.API.Jarvis.Models;
+namespace Jarvis.WEB.API.Models;
 
 public partial class Country
 {
@@ -22,10 +22,4 @@ public partial class Country
     public string? DeletedBy { get; set; }
 
     public virtual ICollection<City> Cities { get; set; } = new List<City>();
-
-    public virtual AspNetUser? CreatedByNavigation { get; set; }
-
-    public virtual AspNetUser? DeletedByNavigation { get; set; }
-
-    public virtual AspNetUser? UpdatedByNavigation { get; set; }
 }

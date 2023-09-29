@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WEB.API.Jarvis.Models;
+namespace Jarvis.WEB.API.Models;
 
 public partial class TrimesterDate
 {
@@ -27,11 +27,5 @@ public partial class TrimesterDate
 
     public string? DeletedBy { get; set; }
 
-    public virtual AspNetUser? CreatedByNavigation { get; set; }
-
-    public virtual AspNetUser? DeletedByNavigation { get; set; }
-
     public virtual Trimester? Trimester { get; set; }
-
-    public virtual AspNetUser? UpdatedByNavigation { get; set; }
 }

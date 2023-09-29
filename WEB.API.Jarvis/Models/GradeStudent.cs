@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WEB.API.Jarvis.Models;
+namespace Jarvis.WEB.API.Models;
 
 public partial class GradeStudent
 {
@@ -23,13 +23,7 @@ public partial class GradeStudent
 
     public string? DeletedBy { get; set; }
 
-    public virtual AspNetUser? CreatedByNavigation { get; set; }
-
-    public virtual AspNetUser? DeletedByNavigation { get; set; }
-
     public virtual Grade? GradeNavigation { get; set; }
 
     public virtual Student? Student { get; set; }
-
-    public virtual AspNetUser? UpdatedByNavigation { get; set; }
 }

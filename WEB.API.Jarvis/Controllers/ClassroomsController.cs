@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WEB.API.Jarvis.Context;
 using WEB.API.Jarvis.Models;
+using Jarvis.WEB.API.Models;
+using Jarvis.WEB.API.Context;
 
 namespace WEB.API.Jarvis.Controllers
 {
@@ -14,9 +16,9 @@ namespace WEB.API.Jarvis.Controllers
     [ApiController]
     public class ClassroomsController : ControllerBase
     {
-        private readonly JarvisDbContext _context;
+        private readonly JarvisFullDbContext _context;
 
-        public ClassroomsController(JarvisDbContext context)
+        public ClassroomsController(JarvisFullDbContext context)
         {
             _context = context;
         }

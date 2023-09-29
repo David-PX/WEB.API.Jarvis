@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WEB.API.Jarvis.Models;
+namespace Jarvis.WEB.API.Models;
 
 public partial class Section
 {
@@ -33,10 +33,6 @@ public partial class Section
 
     public virtual ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
 
-    public virtual AspNetUser? CreatedByNavigation { get; set; }
-
-    public virtual AspNetUser? DeletedByNavigation { get; set; }
-
     public virtual ICollection<Grade> Grades { get; set; } = new List<Grade>();
 
     public virtual ICollection<Report> Reports { get; set; } = new List<Report>();
@@ -48,6 +44,4 @@ public partial class Section
     public virtual Employee? Teacher { get; set; }
 
     public virtual Trimester? Trimester { get; set; }
-
-    public virtual AspNetUser? UpdatedByNavigation { get; set; }
 }

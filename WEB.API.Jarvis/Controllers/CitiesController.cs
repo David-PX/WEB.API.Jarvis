@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WEB.API.Jarvis.Context;
 using WEB.API.Jarvis.Models;
+using Jarvis.WEB.API.Models;
+using Jarvis.WEB.API.Context;
 
 namespace WEB.API.Jarvis.Controllers
 {
@@ -16,10 +18,10 @@ namespace WEB.API.Jarvis.Controllers
     [ApiController]
     public class CitiesController : ControllerBase
     {
-        private readonly JarvisDbContext _context;
+        private readonly JarvisFullDbContext _context;
         private readonly IMapper _mapper;
 
-        public CitiesController(JarvisDbContext context, IMapper mapper)
+        public CitiesController(JarvisFullDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;

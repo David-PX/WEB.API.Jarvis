@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WEB.API.Jarvis.Models;
+namespace Jarvis.WEB.API.Models;
 
 public partial class Enrollment
 {
@@ -39,10 +39,6 @@ public partial class Enrollment
 
     public virtual City? City { get; set; }
 
-    public virtual AspNetUser? CreatedByNavigation { get; set; }
-
-    public virtual AspNetUser? DeletedByNavigation { get; set; }
-
     public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
 
     public virtual ICollection<EmergencyContact> EmergencyContacts { get; set; } = new List<EmergencyContact>();
@@ -50,6 +46,4 @@ public partial class Enrollment
     public virtual IdentificationType? IdentificationType { get; set; }
 
     public virtual ICollection<Student> Students { get; set; } = new List<Student>();
-
-    public virtual AspNetUser? UpdatedByNavigation { get; set; }
 }

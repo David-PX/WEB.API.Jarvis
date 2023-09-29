@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WEB.API.Jarvis.Models;
+namespace Jarvis.WEB.API.Models;
 
 public partial class SectionSchedule
 {
@@ -31,11 +31,5 @@ public partial class SectionSchedule
 
     public virtual Classroom? Classroom { get; set; }
 
-    public virtual AspNetUser? CreatedByNavigation { get; set; }
-
-    public virtual AspNetUser? DeletedByNavigation { get; set; }
-
     public virtual Section? Section { get; set; }
-
-    public virtual AspNetUser? UpdatedByNavigation { get; set; }
 }

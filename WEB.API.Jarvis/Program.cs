@@ -1,4 +1,5 @@
 using Jarvis.WEB.API.AutoMapper;
+using Jarvis.WEB.API.Context;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,9 @@ var builder = WebApplication.CreateBuilder(args);
 // For Entity Framework
 var configuration = builder.Configuration;
 builder.Services.AddDbContext<JarvisDbContext>(options => options.UseSqlServer(
+        configuration.GetConnectionString("ConnStr")));
+
+builder.Services.AddDbContext<JarvisFullDbContext>(options => options.UseSqlServer(
         configuration.GetConnectionString("ConnStr")));
 
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()

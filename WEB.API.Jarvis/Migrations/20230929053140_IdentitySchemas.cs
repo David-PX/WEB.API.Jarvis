@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace WEB.API.Jarvis.Migrations
+namespace Jarvis.WEB.API.Migrations
 {
     /// <inheritdoc />
-    public partial class AddIdentityAuthentication : Migration
+    public partial class IdentitySchemas : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

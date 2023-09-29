@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Jarvis.WEB.API.Context;
+using Jarvis.WEB.API.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,9 +16,9 @@ namespace WEB.API.Jarvis.Controllers
     [ApiController]
     public class EmployeesController : ControllerBase
     {
-        private readonly JarvisDbContext _context;
+        private readonly JarvisFullDbContext _context;
 
-        public EmployeesController(JarvisDbContext context)
+        public EmployeesController(JarvisFullDbContext context)
         {
             _context = context;
         }

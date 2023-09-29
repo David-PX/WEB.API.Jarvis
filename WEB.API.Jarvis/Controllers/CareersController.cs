@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WEB.API.Jarvis.Context;
-using WEB.API.Jarvis.Models;
+using Jarvis.WEB.API.Models;
+using Jarvis.WEB.API.Context;
 
 namespace WEB.API.Jarvis.Controllers
 {
@@ -14,9 +15,9 @@ namespace WEB.API.Jarvis.Controllers
     [ApiController]
     public class CareersController : ControllerBase
     {
-        private readonly JarvisDbContext _context;
+        private readonly JarvisFullDbContext _context;
 
-        public CareersController(JarvisDbContext context)
+        public CareersController(JarvisFullDbContext context)
         {
             _context = context;
         }

@@ -8,7 +8,7 @@ namespace Jarvis.WEB.API.AutoMapper
     {
         public MappingProfile() 
         {
-            CreateMap<City, CityDTO>().ReverseMap();
+            //CreateMap<City, CityDTO>().ReverseMap();
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace WEB.API.Jarvis.Models;
+namespace Jarvis.WEB.API.Models;
 
 public partial class AcademicArea
 {
@@ -23,13 +23,7 @@ public partial class AcademicArea
 
     public virtual ICollection<Career> Careers { get; set; } = new List<Career>();
 
-    public virtual AspNetUser? CreatedByNavigation { get; set; }
-
-    public virtual AspNetUser? DeletedByNavigation { get; set; }
-
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 
     public virtual ICollection<Subject> Subjects { get; set; } = new List<Subject>();
-
-    public virtual AspNetUser? UpdatedByNavigation { get; set; }
 }
