@@ -18,6 +18,7 @@ using Jarvis.WEB.API.DTOs.DTOs.Users;
 using Jarvis.WEB.API.Utilities;
 using Jarvis.WEB.API.Models;
 using Jarvis.WEB.API.Context;
+using MimeKit;
 
 namespace WEB.API.Jarvis.Controllers
 {
@@ -47,7 +48,7 @@ namespace WEB.API.Jarvis.Controllers
             _generalContext = generalContext;
         }
 
-        [HttpPost]
+        [HttpPost("createEmployeeUser")]
         public async Task<IActionResult> CreateEmployeeUser([FromBody] EmployeeUserDTO user)
         {
             var userExist = await _userManager.FindByEmailAsync(user.Email);
@@ -85,7 +86,7 @@ namespace WEB.API.Jarvis.Controllers
                 {
                     EmployeeId = Guid.NewGuid(),
                     SupervisorId = user.SupervisorId,
-                    UserId = newUser.Id,
+                    UserId = newUser.Id, 
                     AcademicAreaId = user.AcademicAreaId,
                     CreatedDate = DateTime.Now,
                     CreatedBy = "TEXT",
@@ -99,10 +100,11 @@ namespace WEB.API.Jarvis.Controllers
                 //Add Toke to verify the email...
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
                 var confirmationLink = Url.Action(nameof(ConfirmEmail), "Authentication", new { token, email = newUser.Email }, Request.Scheme);
-                var message = new Message(new string[] { user.Email! }, "Activate Account Email", $"Hola {user.Names} \n El siguiente es tu link de confirmación " +
-                                                                                                  $"{confirmationLink} \n y la siguiente es tu contraseña provisional: " +
-                                                                                                  $"{provisionalPwd} \n Por favor cambiarla al momento de ingresar");
 
+                var template = new TextPart(MimeKit.Text.TextFormat.Html) { Text = EmailTemplates.GetEmailTemplate(user.Names!, confirmationLink!, provisionalPwd) };
+
+                var message = new Message(new string[] { user.Email! }, "Activate Account Email", EmailTemplates.GetEmailTemplate(user.Names!, confirmationLink!, provisionalPwd));
+                
                 _emailService.SendEmail(message);
 
 
@@ -114,9 +116,10 @@ namespace WEB.API.Jarvis.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError,
                         new Response { Status = "Exception", Message = "Something bad happened" });
             }
-        }
+        }   
 
-        [HttpPost]
+        [HttpPost("registerUser")]
+
         public async Task<IActionResult> Register([FromBody] RegisterUser user)
         {
             var userExist = await _userManager.FindByEmailAsync(user.Email);
