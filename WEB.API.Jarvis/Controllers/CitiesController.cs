@@ -11,6 +11,7 @@ using WEB.API.Jarvis.Context;
 using WEB.API.Jarvis.Models;
 using Jarvis.WEB.API.Models;
 using Jarvis.WEB.API.Context;
+using WEB.API.Jarvis.Utilities;
 
 namespace WEB.API.Jarvis.Controllers
 {
@@ -31,13 +32,25 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet]
         public async Task<ActionResult<CityDTO>> GetCities()
         {
-            var cities = await _context.Cities.ToListAsync();
+            string methodName = "GetCities";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            var cities = await _context.Cities.Where(x => x.DeletedDate == null).ToListAsync();
             if (cities == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "City Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "City Not Found"
+                                    }
+                    );
             }
             var citiesDTO = _mapper.Map<CityDTO>(cities);
-
+            LoggerService.LogActionEnd(methodName, startTime);
             return citiesDTO;
         }
 
@@ -45,17 +58,37 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<City>> GetCity(Guid id)
         {
-          if (_context.Cities == null)
-          {
-              return NotFound();
-          }
+
+            string methodName = "GetCity";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+            if (_context.Cities == null)
+            {
+                LoggerService.LogException(methodName, Request, "City Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "City Not Found"
+                                    }
+                    );
+            }
             var city = await _context.Cities.FindAsync(id);
 
             if (city == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "City Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "City Not Found"
+                                    }
+                    );
             }
-
+            LoggerService.LogActionEnd(methodName, startTime);
             return city;
         }
 
@@ -64,10 +97,24 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCity(Guid id, City city)
         {
+            string methodName = "PutCity";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
             if (id != city.CityId)
             {
-                return BadRequest();
+                LoggerService.LogException(methodName, Request, "City Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The ID of City are not the same"
+                                    }
+                    );
             }
+
+            city.UpdatedDate = DateTime.Now;
+            city.UpdatedBy = Request.Headers["Requester-Jarvis"].ToString();
 
             _context.Entry(city).State = EntityState.Modified;
 
@@ -75,19 +122,42 @@ namespace WEB.API.Jarvis.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
                 if (!CityExists(id))
                 {
-                    return NotFound();
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status404NotFound,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "City Not Found"
+                                        }
+                        );
                 }
                 else
                 {
-                    throw;
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status409Conflict,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "City Conflict With Db Exception"
+                                        }
+                        );
                 }
             }
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                                new Response
+                                {
+                                    Status = "Ok",
+                                    Message = "City Updated Sucessfully"
+                                }
+                );
         }
 
         // POST: api/Cities
@@ -95,48 +165,89 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost]
         public async Task<ActionResult<City>> PostCity(City city)
         {
-          if (_context.Cities == null)
-          {
-              return Problem("Entity set 'JarvisDbContext.Cities'  is null.");
-          }
+            string methodName = "PostCity";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Cities == null)
+            {
+                LoggerService.LogException(methodName, Request, "City Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status406NotAcceptable,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The City was not send"
+                                    }
+                    );
+            }
+
+            city.CreatedBy = Request.Headers["Requester-Jarvis"].ToString();
+            city.CreatedDate = DateTime.Now;
+
             _context.Cities.Add(city);
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                if (CityExists(city.CityId))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
+                LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status409Conflict,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "City Conflict With Db Exception"
+                                    }
+                    );
             }
 
-            return CreatedAtAction("GetCity", new { id = city.CityId }, city);
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status201Created,
+                                new Response
+                                {
+                                    Status = "Created",
+                                    Message = "City Created Sucessfully"
+                                }
+                );
         }
 
         // DELETE: api/Cities/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCity(Guid id)
         {
+            string methodName = "DeleteCity";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             if (_context.Cities == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "City Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "City Not Found"
+                                    }
+                    );
             }
             var city = await _context.Cities.FindAsync(id);
-            if (city == null)
-            {
-                return NotFound();
-            }
+            city.DeletedBy = Request.Headers["Requester-Jarvis"].ToString();
+            city.DeletedDate = DateTime.Now;
 
-            _context.Cities.Remove(city);
+            _context.Entry(city).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status202Accepted,
+                                new Response
+                                {
+                                    Status = "Deleted",
+                                    Message = "City Deleted Sucessfully"
+                                }
+                );
         }
 
         private bool CityExists(Guid id)

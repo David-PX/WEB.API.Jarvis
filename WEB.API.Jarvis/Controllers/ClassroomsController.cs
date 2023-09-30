@@ -9,6 +9,8 @@ using WEB.API.Jarvis.Context;
 using WEB.API.Jarvis.Models;
 using Jarvis.WEB.API.Models;
 using Jarvis.WEB.API.Context;
+using WEB.API.Jarvis.Utilities;
+using System.Reflection;
 
 namespace WEB.API.Jarvis.Controllers
 {
@@ -27,28 +29,61 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Classroom>>> GetClassrooms()
         {
-          if (_context.Classrooms == null)
-          {
-              return NotFound();
-          }
-            return await _context.Classrooms.ToListAsync();
+            string methodName = "GetClassrooms";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+            if (_context.Classrooms == null)
+            {
+                LoggerService.LogException(methodName, Request, "Classroom Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Classroom Not Found"
+                                    }
+                    );
+            }
+            LoggerService.LogActionEnd(methodName, startTime);
+            return await _context.Classrooms.Where(x => x.DeletedDate == null).ToListAsync();
         }
 
         // GET: api/Classrooms/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Classroom>> GetClassroom(Guid id)
         {
-          if (_context.Classrooms == null)
-          {
-              return NotFound();
-          }
+            string methodName = "GetClassroom";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Classrooms == null)
+            {
+                LoggerService.LogException(methodName, Request, "Classroom Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Classroom Not Found"
+                                    }
+                    );
+            }
             var classroom = await _context.Classrooms.FindAsync(id);
 
             if (classroom == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Classroom Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Classroom Not Found"
+                                    }
+                    );
             }
 
+            LoggerService.LogActionEnd(methodName, startTime);
             return classroom;
         }
 
@@ -57,30 +92,67 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutClassroom(Guid id, Classroom classroom)
         {
+            string methodName = "PutClassroom";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             if (id != classroom.ClassroomId)
             {
-                return BadRequest();
+                LoggerService.LogException(methodName, Request, "Classroom Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The ID of Classroom are not the same"
+                                    }
+                    );
             }
 
+            classroom.UpdatedDate = DateTime.Now;
+            classroom.UpdatedBy = Request.Headers["Requester-Jarvis"].ToString();
             _context.Entry(classroom).State = EntityState.Modified;
 
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
                 if (!ClassroomExists(id))
                 {
-                    return NotFound();
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status404NotFound,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Classroom Not Found"
+                                        }
+                        );
                 }
                 else
                 {
-                    throw;
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status409Conflict,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Classroom Conflict With Db Exception"
+                                        }
+                        );
                 }
             }
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                                new Response
+                                {
+                                    Status = "Ok",
+                                    Message = "Classroom Updated Sucessfully"
+                                }
+                );
         }
 
         // POST: api/Classrooms
@@ -88,48 +160,104 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost]
         public async Task<ActionResult<Classroom>> PostClassroom(Classroom classroom)
         {
-          if (_context.Classrooms == null)
-          {
-              return Problem("Entity set 'JarvisDbContext.Classrooms'  is null.");
-          }
+            string methodName = "PostClassroom";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Classrooms == null)
+            {
+                LoggerService.LogException(methodName, Request, "Classroom Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status406NotAcceptable,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The Classroom was not send"
+                                    }
+                    );
+            }
+
+            classroom.CreatedBy = Request.Headers["Requester-Jarvis"].ToString();
+            classroom.CreatedDate = DateTime.Now;
+
             _context.Classrooms.Add(classroom);
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                if (ClassroomExists(classroom.ClassroomId))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
+
+                LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status409Conflict,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Classroom Conflict With Db Exception"
+                                    }
+                    );
+
             }
 
-            return CreatedAtAction("GetClassroom", new { id = classroom.ClassroomId }, classroom);
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status201Created,
+                                new Response
+                                {
+                                    Status = "Created",
+                                    Message = "Classroom Created Sucessfully"
+                                }
+                );
         }
 
         // DELETE: api/Classrooms/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteClassroom(Guid id)
         {
+            string methodName = "DeleteClassroom";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             if (_context.Classrooms == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Classroom Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Classroom Not Found"
+                                    }
+                    );
             }
             var classroom = await _context.Classrooms.FindAsync(id);
             if (classroom == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Classroom Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Classroom Not Found"
+                                    }
+                    );
             }
 
-            _context.Classrooms.Remove(classroom);
+            classroom.DeletedBy = Request.Headers["Requester-Jarvis"].ToString();
+            classroom.DeletedDate = DateTime.Now;
+
+            _context.Entry(classroom).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status202Accepted,
+                                new Response
+                                {
+                                    Status = "Deleted",
+                                    Message = "Classroom Deleted Sucessfully"
+                                }
+                );
         }
 
         private bool ClassroomExists(Guid id)

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WEB.API.Jarvis.Context;
 using WEB.API.Jarvis.Models;
+using WEB.API.Jarvis.Utilities;
 
 namespace WEB.API.Jarvis.Controllers
 {
@@ -27,28 +28,61 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Trimester>>> GetTrimesters()
         {
-          if (_context.Trimesters == null)
-          {
-              return NotFound();
-          }
-            return await _context.Trimesters.ToListAsync();
+            string methodName = "GetBuildings";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+            if (_context.Trimesters == null)
+            {
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
+            }
+            LoggerService.LogActionEnd(methodName, startTime);
+            return await _context.Trimesters.Where(x => x.DeletedDate == null).ToListAsync();
         }
 
         // GET: api/Trimesters/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Trimester>> GetTrimester(Guid id)
         {
-          if (_context.Trimesters == null)
-          {
-              return NotFound();
-          }
+            string methodName = "GetBuildings";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Trimesters == null)
+            {
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
+            }
             var trimester = await _context.Trimesters.FindAsync(id);
 
             if (trimester == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
             }
 
+            LoggerService.LogActionEnd(methodName, startTime);
             return trimester;
         }
 
@@ -57,10 +91,25 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTrimester(Guid id, Trimester trimester)
         {
+            string methodName = "GetBuildings";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             if (id != trimester.IdTrimestres)
             {
-                return BadRequest();
+                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The ID of Building are not the same"
+                                    }
+                    );
             }
+
+            trimester.UpdatedDate = DateTime.Now;
+            trimester.UpdatedBy = Request.Headers["Requester-Jarvis"].ToString();
 
             _context.Entry(trimester).State = EntityState.Modified;
 
@@ -68,19 +117,42 @@ namespace WEB.API.Jarvis.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
                 if (!TrimesterExists(id))
                 {
-                    return NotFound();
+                    LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
                 }
                 else
                 {
-                    throw;
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status409Conflict,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Building Conflict With Db Exception"
+                                        }
+                        );
                 }
             }
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                                new Response
+                                {
+                                    Status = "Ok",
+                                    Message = "Building Updated Sucessfully"
+                                }
+                );
         }
 
         // POST: api/Trimesters
@@ -88,48 +160,104 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost]
         public async Task<ActionResult<Trimester>> PostTrimester(Trimester trimester)
         {
-          if (_context.Trimesters == null)
-          {
-              return Problem("Entity set 'JarvisDbContext.Trimesters'  is null.");
-          }
+            string methodName = "GetBuildings";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Trimesters == null)
+            {
+                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status406NotAcceptable,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The Building was not send"
+                                    }
+                    );
+            }
+
+            trimester.IdTrimestres = Guid.NewGuid();
+            trimester.CreatedBy = Request.Headers["Requester-Jarvis"].ToString();
+            trimester.CreatedDate = DateTime.Now;
+
             _context.Trimesters.Add(trimester);
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
                 if (TrimesterExists(trimester.IdTrimestres))
                 {
-                    return Conflict();
+                LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status409Conflict,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Building Conflict With Db Exception"
+                                    }
+                    );
                 }
-                else
-                {
-                    throw;
-                }
+
             }
 
-            return CreatedAtAction("GetTrimester", new { id = trimester.IdTrimestres }, trimester);
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status201Created,
+                                new Response
+                                {
+                                    Status = "Created",
+                                    Message = "Building Created Sucessfully"
+                                }
+                );
         }
 
         // DELETE: api/Trimesters/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTrimester(Guid id)
         {
+            string methodName = "GetBuildings";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             if (_context.Trimesters == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
             }
             var trimester = await _context.Trimesters.FindAsync(id);
             if (trimester == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
             }
 
             _context.Trimesters.Remove(trimester);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status202Accepted,
+                                new Response
+                                {
+                                    Status = "Deleted",
+                                    Message = "Building Deleted Sucessfully"
+                                }
+                );
         }
 
         private bool TrimesterExists(Guid id)

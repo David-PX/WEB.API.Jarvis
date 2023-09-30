@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WEB.API.Jarvis.Context;
 using WEB.API.Jarvis.Models;
+using WEB.API.Jarvis.Utilities;
 
 namespace WEB.API.Jarvis.Controllers
 {
@@ -27,28 +28,62 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Grade>>> GetGrades()
         {
-          if (_context.Grades == null)
-          {
-              return NotFound();
-          }
-            return await _context.Grades.ToListAsync();
+            string methodName = "GetBuildings";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Grades == null)
+            {
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
+            }
+            LoggerService.LogActionEnd(methodName, startTime);
+            return await _context.Grades.Where(x => x.DeletedDate == null).ToListAsync();
         }
 
         // GET: api/Grades/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Grade>> GetGrade(Guid id)
         {
-          if (_context.Grades == null)
-          {
-              return NotFound();
-          }
+            string methodName = "GetBuildings";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Grades == null)
+            {
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
+            }
             var grade = await _context.Grades.FindAsync(id);
 
             if (grade == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
             }
 
+            LoggerService.LogActionEnd(methodName, startTime);
             return grade;
         }
 
@@ -57,10 +92,25 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutGrade(Guid id, Grade grade)
         {
+            string methodName = "GetBuildings";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             if (id != grade.GradeId)
             {
-                return BadRequest();
+                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The ID of Building are not the same"
+                                    }
+                    );
             }
+
+            grade.UpdatedDate = DateTime.Now;
+            grade.UpdatedBy = Request.Headers["Requester-Jarvis"].ToString();
 
             _context.Entry(grade).State = EntityState.Modified;
 
@@ -68,19 +118,42 @@ namespace WEB.API.Jarvis.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
                 if (!GradeExists(id))
                 {
-                    return NotFound();
+                    LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
                 }
                 else
                 {
-                    throw;
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status409Conflict,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Building Conflict With Db Exception"
+                                        }
+                        );
                 }
             }
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                                new Response
+                                {
+                                    Status = "Ok",
+                                    Message = "Building Updated Sucessfully"
+                                }
+                );
         }
 
         // POST: api/Grades
@@ -88,48 +161,104 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost]
         public async Task<ActionResult<Grade>> PostGrade(Grade grade)
         {
-          if (_context.Grades == null)
-          {
-              return Problem("Entity set 'JarvisDbContext.Grades'  is null.");
-          }
+            string methodName = "GetBuildings";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Grades == null)
+            {
+                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status406NotAcceptable,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The Building was not send"
+                                    }
+                    );
+            }
+
+            grade.GradeId = Guid.NewGuid();
+            grade.CreatedBy = Request.Headers["Requester-Jarvis"].ToString();
+            grade.CreatedDate = DateTime.Now;
+            
             _context.Grades.Add(grade);
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
                 if (GradeExists(grade.GradeId))
                 {
-                    return Conflict();
+                LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status409Conflict,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Building Conflict With Db Exception"
+                                    }
+                    );
                 }
-                else
-                {
-                    throw;
-                }
+
             }
 
-            return CreatedAtAction("GetGrade", new { id = grade.GradeId }, grade);
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status201Created,
+                                new Response
+                                {
+                                    Status = "Created",
+                                    Message = "Building Created Sucessfully"
+                                }
+                );
         }
 
         // DELETE: api/Grades/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGrade(Guid id)
         {
+            string methodName = "GetBuildings";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             if (_context.Grades == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
             }
             var grade = await _context.Grades.FindAsync(id);
             if (grade == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
             }
 
             _context.Grades.Remove(grade);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status202Accepted,
+                                new Response
+                                {
+                                    Status = "Deleted",
+                                    Message = "Building Deleted Sucessfully"
+                                }
+                );
         }
 
         private bool GradeExists(Guid id)

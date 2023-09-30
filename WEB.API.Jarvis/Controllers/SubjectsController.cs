@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WEB.API.Jarvis.Context;
 using WEB.API.Jarvis.Models;
+using WEB.API.Jarvis.Utilities;
 
 namespace WEB.API.Jarvis.Controllers
 {
@@ -27,28 +28,62 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Subject>>> GetSubjects()
         {
-          if (_context.Subjects == null)
-          {
-              return NotFound();
-          }
-            return await _context.Subjects.ToListAsync();
+            string methodName = "GetBuildings";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Subjects == null)
+            {
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
+            }
+            LoggerService.LogActionEnd(methodName, startTime);
+            return await _context.Subjects.Where(x => x.DeletedDate == null).ToListAsync();
         }
 
         // GET: api/Subjects/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Subject>> GetSubject(string id)
         {
-          if (_context.Subjects == null)
-          {
-              return NotFound();
-          }
+            string methodName = "GetBuildings";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Subjects == null)
+            {
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
+            }
             var subject = await _context.Subjects.FindAsync(id);
 
             if (subject == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
             }
 
+            LoggerService.LogActionEnd(methodName, startTime);
             return subject;
         }
 
@@ -57,10 +92,25 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSubject(string id, Subject subject)
         {
+            string methodName = "GetBuildings";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             if (id != subject.SubjectId)
             {
-                return BadRequest();
+                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The ID of Building are not the same"
+                                    }
+                    );
             }
+
+            subject.UpdatedDate = DateTime.Now;
+            subject.UpdatedBy = Request.Headers["Requester-Jarvis"].ToString();
 
             _context.Entry(subject).State = EntityState.Modified;
 
@@ -68,19 +118,42 @@ namespace WEB.API.Jarvis.Controllers
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException ex)
             {
                 if (!SubjectExists(id))
                 {
-                    return NotFound();
+                    LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
                 }
                 else
                 {
-                    throw;
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status409Conflict,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Building Conflict With Db Exception"
+                                        }
+                        );
                 }
             }
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status200OK,
+                                new Response
+                                {
+                                    Status = "Ok",
+                                    Message = "Building Updated Sucessfully"
+                                }
+                );
         }
 
         // POST: api/Subjects
@@ -88,48 +161,103 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost]
         public async Task<ActionResult<Subject>> PostSubject(Subject subject)
         {
-          if (_context.Subjects == null)
-          {
-              return Problem("Entity set 'JarvisDbContext.Subjects'  is null.");
-          }
+            string methodName = "GetBuildings";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Subjects == null)
+            {
+                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status406NotAcceptable,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The Building was not send"
+                                    }
+                    );
+            }
+
+            subject.CreatedBy = Request.Headers["Requester-Jarvis"].ToString();
+            subject.CreatedDate = DateTime.Now;
+
             _context.Subjects.Add(subject);
             try
             {
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
                 if (SubjectExists(subject.SubjectId))
                 {
-                    return Conflict();
+                LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status409Conflict,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Building Conflict With Db Exception"
+                                    }
+                    );
                 }
-                else
-                {
-                    throw;
-                }
+
             }
 
-            return CreatedAtAction("GetSubject", new { id = subject.SubjectId }, subject);
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status201Created,
+                                new Response
+                                {
+                                    Status = "Created",
+                                    Message = "Building Created Sucessfully"
+                                }
+                );
         }
 
         // DELETE: api/Subjects/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSubject(string id)
         {
+            string methodName = "GetBuildings";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             if (_context.Subjects == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
             }
             var subject = await _context.Subjects.FindAsync(id);
             if (subject == null)
             {
-                return NotFound();
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
             }
 
             _context.Subjects.Remove(subject);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status202Accepted,
+                                new Response
+                                {
+                                    Status = "Deleted",
+                                    Message = "Building Deleted Sucessfully"
+                                }
+                );
         }
 
         private bool SubjectExists(string id)
