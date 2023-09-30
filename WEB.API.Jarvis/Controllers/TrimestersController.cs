@@ -28,7 +28,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Trimester>>> GetTrimesters()
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetTrimesters";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
             if (_context.Trimesters == null)
@@ -51,7 +51,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Trimester>> GetTrimester(Guid id)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetTrimesters";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -91,19 +91,19 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutTrimester(Guid id, Trimester trimester)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetTrimesters";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
             if (id != trimester.IdTrimestres)
             {
-                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogException(methodName, Request, "Trimester Bad Request", startTime);
                 LoggerService.LogActionEnd(methodName, startTime);
                 return StatusCode(StatusCodes.Status404NotFound,
                                     new Response
                                     {
                                         Status = "Bad Request",
-                                        Message = "The ID of Building are not the same"
+                                        Message = "The ID of Trimester are not the same"
                                     }
                     );
             }
@@ -139,7 +139,7 @@ namespace WEB.API.Jarvis.Controllers
                                         new Response
                                         {
                                             Status = "Not found",
-                                            Message = "Building Conflict With Db Exception"
+                                            Message = "Trimester Conflict With Db Exception"
                                         }
                         );
                 }
@@ -150,7 +150,7 @@ namespace WEB.API.Jarvis.Controllers
                                 new Response
                                 {
                                     Status = "Ok",
-                                    Message = "Building Updated Sucessfully"
+                                    Message = "Trimester Updated Sucessfully"
                                 }
                 );
         }
@@ -160,19 +160,19 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost]
         public async Task<ActionResult<Trimester>> PostTrimester(Trimester trimester)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetTrimesters";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
             if (_context.Trimesters == null)
             {
-                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogException(methodName, Request, "Trimester Bad Request", startTime);
                 LoggerService.LogActionEnd(methodName, startTime);
                 return StatusCode(StatusCodes.Status406NotAcceptable,
                                     new Response
                                     {
                                         Status = "Bad Request",
-                                        Message = "The Building was not send"
+                                        Message = "The Trimester was not send"
                                     }
                     );
             }
@@ -196,7 +196,7 @@ namespace WEB.API.Jarvis.Controllers
                                     new Response
                                     {
                                         Status = "Not found",
-                                        Message = "Building Conflict With Db Exception"
+                                        Message = "Trimester Conflict With Db Exception"
                                     }
                     );
                 }
@@ -208,7 +208,7 @@ namespace WEB.API.Jarvis.Controllers
                                 new Response
                                 {
                                     Status = "Created",
-                                    Message = "Building Created Sucessfully"
+                                    Message = "Trimester Created Sucessfully"
                                 }
                 );
         }
@@ -217,7 +217,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTrimester(Guid id)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetTrimesters";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -255,7 +255,7 @@ namespace WEB.API.Jarvis.Controllers
                                 new Response
                                 {
                                     Status = "Deleted",
-                                    Message = "Building Deleted Sucessfully"
+                                    Message = "Trimester Deleted Sucessfully"
                                 }
                 );
         }

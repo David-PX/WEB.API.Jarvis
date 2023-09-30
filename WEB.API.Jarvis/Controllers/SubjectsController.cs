@@ -28,7 +28,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Subject>>> GetSubjects()
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetSubjects";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -52,7 +52,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Subject>> GetSubject(string id)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetSubjects";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -92,19 +92,19 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSubject(string id, Subject subject)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetSubjects";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
             if (id != subject.SubjectId)
             {
-                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogException(methodName, Request, "Subject Bad Request", startTime);
                 LoggerService.LogActionEnd(methodName, startTime);
                 return StatusCode(StatusCodes.Status404NotFound,
                                     new Response
                                     {
                                         Status = "Bad Request",
-                                        Message = "The ID of Building are not the same"
+                                        Message = "The ID of Subject are not the same"
                                     }
                     );
             }
@@ -140,7 +140,7 @@ namespace WEB.API.Jarvis.Controllers
                                         new Response
                                         {
                                             Status = "Not found",
-                                            Message = "Building Conflict With Db Exception"
+                                            Message = "Subject Conflict With Db Exception"
                                         }
                         );
                 }
@@ -151,7 +151,7 @@ namespace WEB.API.Jarvis.Controllers
                                 new Response
                                 {
                                     Status = "Ok",
-                                    Message = "Building Updated Sucessfully"
+                                    Message = "Subject Updated Sucessfully"
                                 }
                 );
         }
@@ -161,19 +161,19 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost]
         public async Task<ActionResult<Subject>> PostSubject(Subject subject)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetSubjects";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
             if (_context.Subjects == null)
             {
-                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogException(methodName, Request, "Subject Bad Request", startTime);
                 LoggerService.LogActionEnd(methodName, startTime);
                 return StatusCode(StatusCodes.Status406NotAcceptable,
                                     new Response
                                     {
                                         Status = "Bad Request",
-                                        Message = "The Building was not send"
+                                        Message = "The Subject was not send"
                                     }
                     );
             }
@@ -196,7 +196,7 @@ namespace WEB.API.Jarvis.Controllers
                                     new Response
                                     {
                                         Status = "Not found",
-                                        Message = "Building Conflict With Db Exception"
+                                        Message = "Subject Conflict With Db Exception"
                                     }
                     );
                 }
@@ -208,7 +208,7 @@ namespace WEB.API.Jarvis.Controllers
                                 new Response
                                 {
                                     Status = "Created",
-                                    Message = "Building Created Sucessfully"
+                                    Message = "Subject Created Sucessfully"
                                 }
                 );
         }
@@ -217,7 +217,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSubject(string id)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetSubjects";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -255,7 +255,7 @@ namespace WEB.API.Jarvis.Controllers
                                 new Response
                                 {
                                     Status = "Deleted",
-                                    Message = "Building Deleted Sucessfully"
+                                    Message = "Subject Deleted Sucessfully"
                                 }
                 );
         }

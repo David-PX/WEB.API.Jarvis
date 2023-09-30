@@ -28,7 +28,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SectionSchedule>>> GetSectionSchedules()
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetSection Schedules";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -52,7 +52,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<SectionSchedule>> GetSectionSchedule(Guid id)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetSection Schedules";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -92,19 +92,19 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSectionSchedule(Guid id, SectionSchedule sectionSchedule)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetSection Schedules";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
             if (id != sectionSchedule.SectionScheduleId)
             {
-                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogException(methodName, Request, "Section Schedule Bad Request", startTime);
                 LoggerService.LogActionEnd(methodName, startTime);
                 return StatusCode(StatusCodes.Status404NotFound,
                                     new Response
                                     {
                                         Status = "Bad Request",
-                                        Message = "The ID of Building are not the same"
+                                        Message = "The ID of Section Schedule are not the same"
                                     }
                     );
             }
@@ -140,7 +140,7 @@ namespace WEB.API.Jarvis.Controllers
                                         new Response
                                         {
                                             Status = "Not found",
-                                            Message = "Building Conflict With Db Exception"
+                                            Message = "Section Schedule Conflict With Db Exception"
                                         }
                         );
                 }
@@ -151,7 +151,7 @@ namespace WEB.API.Jarvis.Controllers
                                 new Response
                                 {
                                     Status = "Ok",
-                                    Message = "Building Updated Sucessfully"
+                                    Message = "Section Schedule Updated Sucessfully"
                                 }
                 );
         }
@@ -161,19 +161,19 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost]
         public async Task<ActionResult<SectionSchedule>> PostSectionSchedule(SectionSchedule sectionSchedule)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetSection Schedules";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
             if (_context.SectionSchedules == null)
             {
-                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogException(methodName, Request, "Section Schedule Bad Request", startTime);
                 LoggerService.LogActionEnd(methodName, startTime);
                 return StatusCode(StatusCodes.Status406NotAcceptable,
                                     new Response
                                     {
                                         Status = "Bad Request",
-                                        Message = "The Building was not send"
+                                        Message = "The Section Schedule was not send"
                                     }
                     );
             }
@@ -197,7 +197,7 @@ namespace WEB.API.Jarvis.Controllers
                                     new Response
                                     {
                                         Status = "Not found",
-                                        Message = "Building Conflict With Db Exception"
+                                        Message = "Section Schedule Conflict With Db Exception"
                                     }
                     );
                 }
@@ -209,7 +209,7 @@ namespace WEB.API.Jarvis.Controllers
                                 new Response
                                 {
                                     Status = "Created",
-                                    Message = "Building Created Sucessfully"
+                                    Message = "Section Schedule Created Sucessfully"
                                 }
                 );
         }
@@ -218,7 +218,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSectionSchedule(Guid id)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetSection Schedules";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -256,7 +256,7 @@ namespace WEB.API.Jarvis.Controllers
                                 new Response
                                 {
                                     Status = "Deleted",
-                                    Message = "Building Deleted Sucessfully"
+                                    Message = "Section Schedule Deleted Sucessfully"
                                 }
                 );
         }

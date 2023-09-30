@@ -29,7 +29,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<EmployeesSchedule>>> GetEmployeesSchedules()
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetEmployee Schedules";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -53,7 +53,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<EmployeesSchedule>> GetEmployeesSchedule(Guid id)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetEmployee Schedules";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -93,19 +93,19 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutEmployeesSchedule(Guid id, EmployeesSchedule employeesSchedule)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetEmployee Schedules";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
             if (id != employeesSchedule.EmployeesSchedulesId)
             {
-                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogException(methodName, Request, "Employee Schedule Bad Request", startTime);
                 LoggerService.LogActionEnd(methodName, startTime);
                 return StatusCode(StatusCodes.Status404NotFound,
                                     new Response
                                     {
                                         Status = "Bad Request",
-                                        Message = "The ID of Building are not the same"
+                                        Message = "The ID of Employee Schedule are not the same"
                                     }
                 );
             }
@@ -141,7 +141,7 @@ namespace WEB.API.Jarvis.Controllers
                                         new Response
                                         {
                                             Status = "Not found",
-                                            Message = "Building Conflict With Db Exception"
+                                            Message = "Employee Schedule Conflict With Db Exception"
                                         }
                         );
                 }
@@ -152,7 +152,7 @@ namespace WEB.API.Jarvis.Controllers
                                 new Response
                                 {
                                     Status = "Ok",
-                                    Message = "Building Updated Sucessfully"
+                                    Message = "Employee Schedule Updated Sucessfully"
                                 }
                 );
         }
@@ -162,19 +162,19 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost]
         public async Task<ActionResult<EmployeesSchedule>> PostEmployeesSchedule(EmployeesSchedule employeesSchedule)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetEmployee Schedules";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
             if (_context.EmployeesSchedules == null)
             {
-                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogException(methodName, Request, "Employee Schedule Bad Request", startTime);
                 LoggerService.LogActionEnd(methodName, startTime);
                 return StatusCode(StatusCodes.Status406NotAcceptable,
                                     new Response
                                     {
                                         Status = "Bad Request",
-                                        Message = "The Building was not send"
+                                        Message = "The Employee Schedule was not send"
                                     }
                     );
             }
@@ -198,7 +198,7 @@ namespace WEB.API.Jarvis.Controllers
                                     new Response
                                     {
                                         Status = "Not found",
-                                        Message = "Building Conflict With Db Exception"
+                                        Message = "Employee Schedule Conflict With Db Exception"
                                     }
                     );
                 }
@@ -210,7 +210,7 @@ namespace WEB.API.Jarvis.Controllers
                                 new Response
                                 {
                                     Status = "Created",
-                                    Message = "Building Created Sucessfully"
+                                    Message = "Employee Schedule Created Sucessfully"
                                 }
                 );
         }
@@ -219,7 +219,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteEmployeesSchedule(Guid id)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetEmployee Schedules";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -257,7 +257,7 @@ namespace WEB.API.Jarvis.Controllers
                                 new Response
                                 {
                                     Status = "Deleted",
-                                    Message = "Building Deleted Sucessfully"
+                                    Message = "Employee Schedule Deleted Sucessfully"
                                 }
                 );
         }

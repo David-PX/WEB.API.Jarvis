@@ -29,7 +29,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<InvoicesStatus>>> GetInvoicesStatuses()
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetInvoice Statuss";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -53,7 +53,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<InvoicesStatus>> GetInvoicesStatus(Guid id)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetInvoice Statuss";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -93,19 +93,19 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutInvoicesStatus(Guid id, InvoicesStatus invoicesStatus)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetInvoice Statuss";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
             if (id != invoicesStatus.InvoiceStatusId)
             {
-                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogException(methodName, Request, "Invoice Status Bad Request", startTime);
                 LoggerService.LogActionEnd(methodName, startTime);
                 return StatusCode(StatusCodes.Status404NotFound,
                                     new Response
                                     {
                                         Status = "Bad Request",
-                                        Message = "The ID of Building are not the same"
+                                        Message = "The ID of Invoice Status are not the same"
                                     }
                 );
             }
@@ -141,7 +141,7 @@ namespace WEB.API.Jarvis.Controllers
                                         new Response
                                         {
                                             Status = "Not found",
-                                            Message = "Building Conflict With Db Exception"
+                                            Message = "Invoice Status Conflict With Db Exception"
                                         }
                         );
                 }
@@ -152,7 +152,7 @@ namespace WEB.API.Jarvis.Controllers
                                 new Response
                                 {
                                     Status = "Ok",
-                                    Message = "Building Updated Sucessfully"
+                                    Message = "Invoice Status Updated Sucessfully"
                                 }
                 );
         }
@@ -162,19 +162,19 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost]
         public async Task<ActionResult<InvoicesStatus>> PostInvoicesStatus(InvoicesStatus invoicesStatus)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetInvoice Statuss";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
             if (_context.InvoicesStatuses == null)
             {
-                LoggerService.LogException(methodName, Request, "Building Bad Request", startTime);
+                LoggerService.LogException(methodName, Request, "Invoice Status Bad Request", startTime);
                 LoggerService.LogActionEnd(methodName, startTime);
                 return StatusCode(StatusCodes.Status406NotAcceptable,
                                     new Response
                                     {
                                         Status = "Bad Request",
-                                        Message = "The Building was not send"
+                                        Message = "The Invoice Status was not send"
                                     }
                     );
             }
@@ -198,7 +198,7 @@ namespace WEB.API.Jarvis.Controllers
                                     new Response
                                     {
                                         Status = "Not found",
-                                        Message = "Building Conflict With Db Exception"
+                                        Message = "Invoice Status Conflict With Db Exception"
                                     }
                     );
                 }
@@ -210,7 +210,7 @@ namespace WEB.API.Jarvis.Controllers
                                 new Response
                                 {
                                     Status = "Created",
-                                    Message = "Building Created Sucessfully"
+                                    Message = "Invoice Status Created Sucessfully"
                                 }
                 );
         }
@@ -219,7 +219,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteInvoicesStatus(Guid id)
         {
-            string methodName = "GetBuildings";
+            string methodName = "GetInvoice Statuss";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -257,7 +257,7 @@ namespace WEB.API.Jarvis.Controllers
                                 new Response
                                 {
                                     Status = "Deleted",
-                                    Message = "Building Deleted Sucessfully"
+                                    Message = "Invoice Status Deleted Sucessfully"
                                 }
                 );
         }
