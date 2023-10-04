@@ -54,7 +54,7 @@ namespace WEB.API.Jarvis.Controllers
        
         public async Task<IActionResult> CreateEmployeeUser([FromBody] EmployeeUserDTO user)
         {
-            string methodName = "GetStudents";
+            string methodName = "CreateEmployeeUser";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -62,6 +62,7 @@ namespace WEB.API.Jarvis.Controllers
             var userExist = await _userManager.FindByEmailAsync(user.Email);
             if (userExist != null)
             {
+                LoggerService.LogActionEnd(methodName, startTime);
                 return StatusCode(StatusCodes.Status403Forbidden,
                     new Response { Status = "Error", Message = "User already exists!" });
             }
@@ -80,7 +81,8 @@ namespace WEB.API.Jarvis.Controllers
                 var result = await _userManager.CreateAsync(newUser, provisionalPwd);
                 if (!result.Succeeded)
                 {
-                    StatusCode(StatusCodes.Status500InternalServerError,
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status500InternalServerError,
                         new Response { Status = "Error", Message = "User Failed to Create!" });
                 }
                 string employeeRole = (user.Role == "" || user.Role == null) ? "Employee" : user.Role;
@@ -131,9 +133,14 @@ namespace WEB.API.Jarvis.Controllers
 
         public async Task<IActionResult> Register([FromBody] RegisterUser user)
         {
+            string methodName = "Register";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             var userExist = await _userManager.FindByEmailAsync(user.Email);
             if (userExist != null)
             {
+                LoggerService.LogActionEnd(methodName, startTime);
                 return StatusCode(StatusCodes.Status403Forbidden,
                     new Response { Status = "Error", Message = "User already exists!" });
             }
@@ -148,7 +155,8 @@ namespace WEB.API.Jarvis.Controllers
             var result = await _userManager.CreateAsync(newUser, user.Password);
             if (!result.Succeeded)
             {
-                StatusCode(StatusCodes.Status500InternalServerError,
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status500InternalServerError,
                     new Response { Status = "Error", Message = "User Failed to Create!" });
             }
 
@@ -161,7 +169,7 @@ namespace WEB.API.Jarvis.Controllers
             var message = new Message(new string[] { user.Email! }, "Confirmation Email Link", confirmationLink!);
             _emailService.SendEmail(message);
 
-
+            LoggerService.LogActionEnd(methodName, startTime);
             return StatusCode(StatusCodes.Status201Created,
                     new Response { Status = "Success", Message = "User Created Successfully!" });
 
@@ -170,33 +178,43 @@ namespace WEB.API.Jarvis.Controllers
         [HttpGet("ConfirmEmail")]
         public async Task<IActionResult> ConfirmEmail(string token, string email)
         {
+            string methodName = "ConfirmEmail";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             var user = await _userManager.FindByEmailAsync(email);
             if (user != null)
             {
                 var result = await _userManager.ConfirmEmailAsync(user, token);
                 if (result.Succeeded)
                 {
+                    LoggerService.LogActionEnd(methodName, startTime);
                     return StatusCode(StatusCodes.Status200OK,
                         new Response { Status = " Success", Message = "Email Verified Successfully" });
                 }
             }
+            LoggerService.LogActionEnd(methodName, startTime);
             return StatusCode(StatusCodes.Status500InternalServerError,
                    new Response { Status = "Error", Message = "This user does not exist" });
         }
 
-        [HttpGet("pruebaLog")]
-        public async Task<IActionResult> PruebaLog()
-        {
-            //LoggerService.Info("Prueba1");
-            return StatusCode(StatusCodes.Status200OK,
-                new Response { Status = " Success", Message = "Email Verified Successfully" });
+        //[HttpGet("pruebaLog")]
+        //public async Task<IActionResult> PruebaLog()
+        //{
+        //    //LoggerService.Info("Prueba1");
+        //    return StatusCode(StatusCodes.Status200OK,
+        //        new Response { Status = " Success", Message = "Email Verified Successfully" });
 
-        }
+        //}
 
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> Login([FromBody] LoginModel loginModel)
         {
+            string methodName = "Login";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             var user = await _userManager.FindByNameAsync(loginModel.Email);
             if (user != null && await _userManager.CheckPasswordAsync(user, loginModel.Password))
             {
@@ -216,7 +234,7 @@ namespace WEB.API.Jarvis.Controllers
                 var jwtToken = GetToken(authClaims);
 
                 //var userInfo = await _context.Guests.FirstOrDefaultAsync(x => x.UserID == user.Id);
-
+                LoggerService.LogActionEnd(methodName, startTime);
                 return Ok(new
                 {
                     //id = userInfo.ID,
@@ -227,6 +245,7 @@ namespace WEB.API.Jarvis.Controllers
                     expiration = jwtToken.ValidTo
                 });
             }
+            LoggerService.LogActionEnd(methodName, startTime);
             return Unauthorized();
         }
 
@@ -234,29 +253,37 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost("ChangePassword/{id}")]
         public async Task<IActionResult> ChangePassword(ResetPassword dto)
         {
+            string methodName = "ChangePassword";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
             // Validate the input.
             if (dto.UserId == null || dto.UserId == 0)
             {
+                LoggerService.LogActionEnd(methodName, startTime);
                 return BadRequest("UserId is required.");
             }
 
             if (string.IsNullOrEmpty(dto.oldPassword))
             {
+                LoggerService.LogActionEnd(methodName, startTime);
                 return BadRequest("Old password is required.");
             }
 
             if (string.IsNullOrEmpty(dto.newPassword))
             {
+                LoggerService.LogActionEnd(methodName, startTime);
                 return BadRequest("New password is required.");
             }
 
             if (string.IsNullOrEmpty(dto.confirmPassword))
             {
+                LoggerService.LogActionEnd(methodName, startTime);
                 return BadRequest("Confirm password is required.");
             }
 
             if (dto.newPassword != dto.confirmPassword)
             {
+                LoggerService.LogActionEnd(methodName, startTime);
                 return BadRequest("New password and confirm password do not match.");
             }
 
@@ -267,18 +294,23 @@ namespace WEB.API.Jarvis.Controllers
             // Validate the old password.
             if (!await _userManager.CheckPasswordAsync(user, dto.oldPassword))
             {
+                LoggerService.LogActionEnd(methodName, startTime);
                 return BadRequest("Old password is incorrect.");
             }
 
             // Change the password.
             await _userManager.ChangePasswordAsync(user, dto.oldPassword, dto.newPassword);
-
+            LoggerService.LogActionEnd(methodName, startTime);
             // Return success.
             return Ok();
         }
 
         private JwtSecurityToken GetToken(List<Claim> authClaim)
         {
+            string methodName = "GetToken";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
             var authSigninKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]!));
 
             var token = new JwtSecurityToken(
@@ -289,6 +321,7 @@ namespace WEB.API.Jarvis.Controllers
                 signingCredentials: new SigningCredentials(authSigninKey, SecurityAlgorithms.HmacSha256)
                 );
 
+            LoggerService.LogActionEnd(methodName, startTime);
             return token;
         }
     }
