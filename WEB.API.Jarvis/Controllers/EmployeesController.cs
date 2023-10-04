@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jarvis.WEB.API.Context;
 using Jarvis.WEB.API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ namespace WEB.API.Jarvis.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "GENERAL_ADMIN")]
     public class EmployeesController : ControllerBase
     {
         private readonly JarvisFullDbContext _context;

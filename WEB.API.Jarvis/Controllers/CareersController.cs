@@ -10,11 +10,13 @@ using Jarvis.WEB.API.Models;
 using Jarvis.WEB.API.Context;
 using WEB.API.Jarvis.Utilities;
 using WEB.API.Jarvis.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WEB.API.Jarvis.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "GENERAL_ADMIN")]
     public class CareersController : ControllerBase
     {
         private readonly JarvisFullDbContext _context;

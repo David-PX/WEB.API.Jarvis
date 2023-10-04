@@ -19,11 +19,13 @@ using Jarvis.WEB.API.Utilities;
 using Jarvis.WEB.API.Models;
 using Jarvis.WEB.API.Context;
 using MimeKit;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WEB.API.Jarvis.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "GENERAL_ADMIN")]
     public class AuthenticationController : ControllerBase
     {
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -49,6 +51,7 @@ namespace WEB.API.Jarvis.Controllers
         }
 
         [HttpPost("createEmployeeUser")]
+       
         public async Task<IActionResult> CreateEmployeeUser([FromBody] EmployeeUserDTO user)
         {
             var userExist = await _userManager.FindByEmailAsync(user.Email);
