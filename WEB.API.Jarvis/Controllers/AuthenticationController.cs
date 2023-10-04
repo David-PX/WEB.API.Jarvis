@@ -54,6 +54,11 @@ namespace WEB.API.Jarvis.Controllers
        
         public async Task<IActionResult> CreateEmployeeUser([FromBody] EmployeeUserDTO user)
         {
+            string methodName = "GetStudents";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+
             var userExist = await _userManager.FindByEmailAsync(user.Email);
             if (userExist != null)
             {
@@ -110,12 +115,13 @@ namespace WEB.API.Jarvis.Controllers
                 
                 _emailService.SendEmail(message);
 
-
+                LoggerService.LogActionEnd(methodName, startTime);
                 return StatusCode(StatusCodes.Status201Created,
                         new Response { Status = "Success", Message = "User Created Successfully!" });
             }
             catch (Exception ex) 
             {
+                LoggerService.LogException(methodName, Request, ex.ToString(), startTime);
                 return StatusCode(StatusCodes.Status500InternalServerError,
                         new Response { Status = "Exception", Message = "Something bad happened" });
             }
