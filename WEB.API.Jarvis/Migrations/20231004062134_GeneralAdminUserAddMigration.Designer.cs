@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WEB.API.Jarvis.Context;
 
@@ -11,9 +12,11 @@ using WEB.API.Jarvis.Context;
 namespace Jarvis.WEB.API.Migrations
 {
     [DbContext(typeof(JarvisDbContext))]
-    partial class JarvisDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231004062134_GeneralAdminUserAddMigration")]
+    partial class GeneralAdminUserAddMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,56 +54,56 @@ namespace Jarvis.WEB.API.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "ede198a3-2698-48f3-acd3-7e8e5804845f",
+                            Id = "480cbd9c-784a-4cc3-84a9-f20539571e5f",
                             ConcurrencyStamp = "1",
                             Name = "STUDENT",
                             NormalizedName = "STUDENT"
                         },
                         new
                         {
-                            Id = "9af7d6d7-e876-4132-a879-6d70b18ca4e0",
+                            Id = "66a17000-d48a-461b-b5d3-491fe83c8488",
                             ConcurrencyStamp = "1",
                             Name = "EMPLOYEE",
                             NormalizedName = "EMPLOYEE"
                         },
                         new
                         {
-                            Id = "22b2cec2-4456-4fa5-b429-a499fa098585",
+                            Id = "5c0f3136-2755-46c4-b69d-792227d070c3",
                             ConcurrencyStamp = "1",
                             Name = "GENERAL_ADMIN",
                             NormalizedName = "GENERAL_ADMIN"
                         },
                         new
                         {
-                            Id = "189a56f5-f0e5-461d-845f-ea5b3bffa654",
+                            Id = "a6c7ba24-7413-4317-8dba-b42af6f9bd2c",
                             ConcurrencyStamp = "1",
                             Name = "STUDENT_ADMISSIONS_ADMIN",
                             NormalizedName = "STUDENT_ADMISSIONS_ADMIN"
                         },
                         new
                         {
-                            Id = "29e68e26-7e9d-476a-84e7-47acf8ec7469",
+                            Id = "0003dd85-a1ac-437e-bf0b-00364ede1f56",
                             ConcurrencyStamp = "1",
                             Name = "EMPLOYEE_ADMISSIONS_ADMIN",
                             NormalizedName = "EMPLOYEE_ADMISSIONS_ADMIN"
                         },
                         new
                         {
-                            Id = "92e38e9b-d7a4-4395-9229-0bcd0221534b",
+                            Id = "0666d097-6db8-41a2-9905-c5e2b3198470",
                             ConcurrencyStamp = "1",
                             Name = "ACEDEMIC_ADMIN",
                             NormalizedName = "ACEDEMIC_ADMIN"
                         },
                         new
                         {
-                            Id = "470aa80e-717a-465e-a202-dcb53cfb2f17",
+                            Id = "eff703ca-c4b5-4829-936f-50975ec22fcd",
                             ConcurrencyStamp = "1",
                             Name = "FINANTIAL_ADMIN",
                             NormalizedName = "FINANTIAL_ADMIN"
                         },
                         new
                         {
-                            Id = "5a3d0eac-8c09-4416-b013-c7ad41b2fd1e",
+                            Id = "c0b574de-cbd0-47d5-bbd5-659349a25fd2",
                             ConcurrencyStamp = "1",
                             Name = "MISC_ADMIN",
                             NormalizedName = "MISC_ADMIN"
@@ -199,17 +202,17 @@ namespace Jarvis.WEB.API.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "d2f5335b-7470-4d43-9440-43c0e0c6ece4",
+                            Id = "cf32c2e6-afa5-41e5-af8e-97d846f70d52",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "aa91c0d3-40d7-4796-ae2b-60ac61fe55b2",
+                            ConcurrencyStamp = "a92e06d9-16aa-40db-8dd1-44edaa64e321",
                             Email = "admin@admin.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@admin.COM",
                             NormalizedUserName = "ADMIN@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEAdqMWfMv0SAghw67AHg+0HGeCYnCgOAG6XaaGwAsEvD2HjG2M7PmjJUGQNPBhG+sg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEM68U/SR9XaByjD2PW9y1nec4meLkS/jiW2bMZZ/wAd8OszwMCsIPHpcDYFft8xoKg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "6717e4f8-d193-4cc5-a31e-a18966481de3",
+                            SecurityStamp = "db2e75eb-169a-484a-9c6b-45c824d485c2",
                             TwoFactorEnabled = false,
                             UserName = "admin@admin.com"
                         });
@@ -275,13 +278,6 @@ namespace Jarvis.WEB.API.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = "d2f5335b-7470-4d43-9440-43c0e0c6ece4",
-                            RoleId = "22b2cec2-4456-4fa5-b429-a499fa098585"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
