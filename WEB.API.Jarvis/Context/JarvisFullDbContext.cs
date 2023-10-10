@@ -458,6 +458,7 @@ public partial class JarvisFullDbContext : DbContext
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.DeletedBy).HasMaxLength(450);
             entity.Property(e => e.DeletedDate).HasColumnType("datetime");
+            entity.Property(e => e.Email).HasMaxLength(150);
             entity.Property(e => e.Gender)
                 .HasMaxLength(30)
                 .IsUnicode(false);

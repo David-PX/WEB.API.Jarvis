@@ -2,7 +2,7 @@
 {
     public static class EmailTemplates
     {
-        public static string GetEmailTemplate(string userNames, string confirmationLink, string provisionalPwd)
+        public static string GetCreateNewUserEmailTemplate(string userNames, string confirmationLink, string provisionalPwd)
         {
             string emailMessage = $@"
 				 <!DOCTYPE html>
@@ -377,6 +377,78 @@
                       </center>
                     </body>
                     </html>
+                ";
+
+            return emailMessage;
+        }
+
+
+
+        public static string GetEnrollmentEmailTemplate(string formLink)
+        {
+            string emailMessage = $@"
+				  <!DOCTYPE html>
+                    <html lang=""en"">
+                    <head>
+                        <meta charset=""UTF-8"">
+                        <meta http-equiv=""X-UA-Compatible"" content=""IE=edge"">
+                        <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+                        <title>Confirmación de Inscripción</title>
+                        <style>
+                            /* Estilos de la plantilla */
+                            body {{
+                                font-family: Arial, sans-serif;
+                                margin: 0;
+                                padding: 0;
+                                background-color: #f4f4f4;
+                            }}
+                            .container {{
+                                max-width: 600px;
+                                margin: 0 auto;
+                                padding: 20px;
+                                background-color: #ffffff;
+                                border-radius: 5px;
+                                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                            }}
+                            h1 {{
+                                color: #333333;
+                            }}
+                            p {{
+                                font-size: 16px;
+                                color: #666666;
+                            }}
+                            a {{
+                                text-decoration: none;
+                                color: #007bff;
+                            }}
+                            /* Estilo para el encabezado */
+                            .header {{
+                                background-color: #3A57E8;
+                                color: #ffffff;
+                                padding: 20px;
+                                text-align: center;
+                            }}
+                            .header h2 {{
+                                margin: 0;
+                                font-size: 24px;
+                            }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class=""container"">
+                            <div class=""header"">
+                                <h2>Bienvenido a Jarvis</h2>
+                            </div>
+                            <h1>¡Gracias por inscribirte!</h1>
+                            <p>Estimado usuario,</p>
+                            <p>Has completado el primer paso de tu inscripción. Ahora, solo tienes que llenar el formulario de inscripción final haciendo clic en el siguiente enlace:</p>
+                            <p><a href=""{formLink}"">Formulario de Inscripción</a></p>
+                            <p>Si tienes alguna pregunta o necesitas asistencia, no dudes en ponerte en contacto con nuestro equipo de soporte.</p>
+                            <p>¡Esperamos verte pronto!</p>
+                        </div>
+                    </body>
+                    </html>
+
                 ";
 
             return emailMessage;

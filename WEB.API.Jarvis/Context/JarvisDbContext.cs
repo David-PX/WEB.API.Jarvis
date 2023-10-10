@@ -46,9 +46,9 @@ public partial class JarvisDbContext : IdentityDbContext<IdentityUser>
             {
                 Id = "d2f5335b-7470-4d43-9440-43c0e0c6ece4",
                 UserName = "admin@admin.com",
-                NormalizedUserName = "ADMIN@EXAMPLE.COM",
+                NormalizedUserName = "ADMIN@ADMIN.COM",
                 Email = "admin@admin.com",
-                NormalizedEmail = "ADMIN@admin.COM",
+                NormalizedEmail = "ADMIN@ADMIN.COM",
                 EmailConfirmed = true,
                 PasswordHash = hasher.HashPassword(null, "Password123!")
             });

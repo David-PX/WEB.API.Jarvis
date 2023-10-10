@@ -48,6 +48,14 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddCors(options => {
+    options.AddPolicy("MyPolicy", builder => {
+        builder.WithOrigins("http://localhost:3000", "http://localhost:4200");
+        builder.AllowAnyMethod();
+        builder.AllowAnyHeader();
+    });
+});
+
 var emailConfig = configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>();
 builder.Services.AddSingleton(emailConfig);
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -69,6 +77,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("MyPolicy");
 
 app.UseAuthorization();
 

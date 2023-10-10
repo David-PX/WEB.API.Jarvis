@@ -25,7 +25,6 @@ namespace WEB.API.Jarvis.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "GENERAL_ADMIN")]
     public class AuthenticationController : ControllerBase
     {
         private readonly RoleManager<IdentityRole> _roleManager;
@@ -51,7 +50,8 @@ namespace WEB.API.Jarvis.Controllers
         }
 
         [HttpPost("createEmployeeUser")]
-       
+        [Authorize(Roles = "GENERAL_ADMIN")]
+
         public async Task<IActionResult> CreateEmployeeUser([FromBody] EmployeeUserDTO user)
         {
             string methodName = "CreateEmployeeUser";
@@ -111,9 +111,9 @@ namespace WEB.API.Jarvis.Controllers
                 var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
                 var confirmationLink = Url.Action(nameof(ConfirmEmail), "Authentication", new { token, email = newUser.Email }, Request.Scheme);
 
-                var template = new TextPart(MimeKit.Text.TextFormat.Html) { Text = EmailTemplates.GetEmailTemplate(user.Names!, confirmationLink!, provisionalPwd) };
+                var template = new TextPart(MimeKit.Text.TextFormat.Html) { Text = EmailTemplates.GetCreateNewUserEmailTemplate(user.Names!, confirmationLink!, provisionalPwd) };
 
-                var message = new Message(new string[] { user.Email! }, "Activate Account Email", EmailTemplates.GetEmailTemplate(user.Names!, confirmationLink!, provisionalPwd));
+                var message = new Message(new string[] { user.Email! }, "Activate Account Email", EmailTemplates.GetCreateNewUserEmailTemplate(user.Names!, confirmationLink!, provisionalPwd));
                 
                 _emailService.SendEmail(message);
 
@@ -130,7 +130,7 @@ namespace WEB.API.Jarvis.Controllers
         }   
 
         [HttpPost("registerUser")]
-
+        [Authorize(Roles = "GENERAL_ADMIN")]
         public async Task<IActionResult> Register([FromBody] RegisterUser user)
         {
             string methodName = "Register";

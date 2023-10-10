@@ -4,10 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Jarvis.WEB.API.Context;
 using Jarvis.WEB.API.Models;
+using Jarvis.WEB.API.Utilities;
+using Mail.Service.Models;
+using Mail.Service.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MimeKit;
+using NuGet.Common;
 using WEB.API.Jarvis.Context;
 using WEB.API.Jarvis.Models;
 using WEB.API.Jarvis.Utilities;
@@ -16,14 +21,18 @@ namespace WEB.API.Jarvis.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "GENERAL_ADMIN")]
+    //[Authorize(Roles = "GENERAL_ADMIN")]
     public class EnrollmentsController : ControllerBase
     {
         private readonly JarvisFullDbContext _context;
+        private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
-        public EnrollmentsController(JarvisFullDbContext context)
+        public EnrollmentsController(JarvisFullDbContext context, IEmailService emailService, IConfiguration configuration)
         {
             _context = context;
+            _emailService = emailService;
+            _configuration = configuration;
         }
 
         // GET: api/Enrollments
@@ -215,6 +224,62 @@ namespace WEB.API.Jarvis.Controllers
                                 }
                 );
         }
+
+        [HttpGet("EnrollmentRequest/{email}")]
+        public async Task<ActionResult> EnrollmentRequest(string email)
+        {
+            string methodName = "EnrollmentRequest";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Enrollments == null)
+            {
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
+            }
+
+            var enrollment = await _context.Enrollments.FirstOrDefaultAsync(x => x.Email == email);
+
+            if (enrollment != null )
+            {
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status400BadRequest,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "this user is already enrollment"
+                                    }
+                );
+            }
+
+         
+            try
+            {
+                var message = new Message(new string[] { email! }, "Vuelvete Parte de Nosotros", EmailTemplates.GetEnrollmentEmailTemplate(_configuration["FrontURls:EnrrolmentForm"]!));
+
+                _emailService.SendEmail(message);
+
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status200OK,
+                        new Response { Status = "Success", Message = "Email Send Successfully" });
+
+            }
+            catch (Exception ex)
+            {
+                LoggerService.LogException(methodName, Request, ex.ToString(), startTime);
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                        new Response { Status = "Exception", Message = "Something bad happened" });
+            }
+
+        }
+
 
         // DELETE: api/Enrollments/5
         [HttpDelete("{id}")]
