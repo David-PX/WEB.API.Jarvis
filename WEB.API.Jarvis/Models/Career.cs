@@ -5,7 +5,7 @@ namespace Jarvis.WEB.API.Models;
 
 public partial class Career
 {
-    public Guid CareerId { get; set; }
+    public string CareerId { get; set; }
 
     public string? CareerName { get; set; }
 

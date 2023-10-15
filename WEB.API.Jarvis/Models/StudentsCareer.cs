@@ -7,7 +7,7 @@ public partial class StudentsCareer
 {
     public string? StudentId { get; set; }
 
-    public Guid? CareerId { get; set; }
+    public string? CareerId { get; set; }
 
     public DateTime? StartDate { get; set; }
 

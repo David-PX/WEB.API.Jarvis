@@ -94,13 +94,13 @@ namespace WEB.API.Jarvis.Controllers
         // PUT: api/Careers/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCareer(Guid id, Career career)
+        public async Task<IActionResult> PutCareer(string id, Career career)
         {
             string methodName = "PutCareer";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
-            if (id != career.CareerId)
+            if (id.ToString() != career.CareerId)
             {
                 LoggerService.LogException(methodName, Request, "Career Bad Request", startTime);
                 LoggerService.LogActionEnd(methodName, startTime);
@@ -181,7 +181,7 @@ namespace WEB.API.Jarvis.Controllers
                     );
             }
 
-            career.CareerId = Guid.NewGuid();
+         
             career.CreatedBy = Request.Headers["Requester-Jarvis"].ToString();
             career.CreatedDate = DateTime.Now;
 
@@ -267,7 +267,7 @@ namespace WEB.API.Jarvis.Controllers
                 );
         }
 
-        private bool CareerExists(Guid id)
+        private bool CareerExists(string id)
         {
             return (_context.Careers?.Any(e => e.CareerId == id)).GetValueOrDefault();
         }

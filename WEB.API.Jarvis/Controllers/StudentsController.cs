@@ -17,7 +17,7 @@ namespace WEB.API.Jarvis.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "GENERAL_ADMIN")]
+    //[Authorize(Roles = "GENERAL_ADMIN")]
     public class StudentsController : ControllerBase
     {
         private readonly JarvisFullDbContext _context;
@@ -75,16 +75,18 @@ namespace WEB.API.Jarvis.Controllers
 
             if (student == null)
             {
-                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogException(methodName, Request, "Student Not Found", startTime);
                 LoggerService.LogActionEnd(methodName, startTime);
                 return StatusCode(StatusCodes.Status404NotFound,
                                     new Response
                                     {
                                         Status = "Not found",
-                                        Message = "Career Not Found"
+                                        Message = "Student Not Found"
                                     }
                     );
             }
+
+            student.Enrollment = _context.Enrollments.FirstOrDefault(x => x.EnrollmentId == student.EnrollmentId);
 
             LoggerService.LogActionEnd(methodName, startTime);
             return student;

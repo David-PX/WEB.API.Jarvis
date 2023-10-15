@@ -7,7 +7,7 @@ public partial class Student
 {
     public string StudentId { get; set; } = null!;
 
-    public Guid? CareerId { get; set; }
+    public string? CareerId { get; set; }
 
     public Guid? EnrollmentId { get; set; }
 

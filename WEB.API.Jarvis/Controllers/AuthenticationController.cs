@@ -249,6 +249,63 @@ namespace WEB.API.Jarvis.Controllers
             return Unauthorized();
         }
 
+        [HttpPost]
+        [Route("login/student")]
+        public async Task<IActionResult> LoginStudent([FromBody] StudentLoginModel loginModel)
+        {
+            string methodName = "Login";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if(loginModel.ID == "" && loginModel.Email == "")
+            {
+                return BadRequest();
+            }
+
+            Student student = null;
+            IdentityUser user = null;
+            if (loginModel.ID?.Length > 0 && (loginModel.Email == "" || loginModel.Email == null))
+            {
+                student = await _generalContext.Students.FirstOrDefaultAsync(x => x.StudentId ==  loginModel.ID);
+                user = await _userManager.FindByIdAsync(student.UserId);
+            }
+            else if (loginModel.ID == "" && loginModel.Email.Length > 0)
+            {
+               user = await _userManager.FindByEmailAsync(loginModel.Email);
+            }
+
+            if (user != null && await _userManager.CheckPasswordAsync(user, loginModel.Password))
+            {
+                var authClaims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                };
+
+                var userRoles = await _userManager.GetRolesAsync(user);
+
+                foreach (var role in userRoles)
+                {
+                    authClaims.Add(new Claim(ClaimTypes.Role, role));
+                }
+
+                var jwtToken = GetToken(authClaims);
+
+                //var userInfo = await _context.Guests.FirstOrDefaultAsync(x => x.UserID == user.Id);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return Ok(new
+                {
+                    //id = userInfo.ID,
+                    //names = userInfo.Names,
+                    //lastnames = userInfo.LastNames,
+                    //phoneNumber = userInfo.PhoneNumber,
+                    token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
+                    expiration = jwtToken.ValidTo
+                });
+            }
+            LoggerService.LogActionEnd(methodName, startTime);
+            return Unauthorized();
+        }
 
         [HttpPost("ChangePassword/{id}")]
         public async Task<IActionResult> ChangePassword(ResetPassword dto)
