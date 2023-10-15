@@ -41,7 +41,7 @@ public partial class Enrollment
 
     public bool? IsAdmitted { get; set; }
 
-    public Guid? CareerId { get; set; }
+    public string? CareerId { get; set; }
 
     public virtual Career? Career { get; set; }
 
