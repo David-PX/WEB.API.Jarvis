@@ -1,19 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Jarvis.WEB.API.Context;
+﻿using Jarvis.WEB.API.Context;
 using Jarvis.WEB.API.Models;
 using Jarvis.WEB.API.Utilities;
 using Mail.Service.Models;
 using Mail.Service.Services;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MimeKit;
-using NuGet.Common;
-using WEB.API.Jarvis.Context;
 using WEB.API.Jarvis.Models;
 using WEB.API.Jarvis.Utilities;
 
@@ -134,14 +125,14 @@ namespace WEB.API.Jarvis.Controllers
                 if (!EnrollmentExists(id))
                 {
                     LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
-                LoggerService.LogActionEnd(methodName, startTime);
-                return StatusCode(StatusCodes.Status404NotFound,
-                                    new Response
-                                    {
-                                        Status = "Not found",
-                                        Message = "Career Not Found"
-                                    }
-                    );
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status404NotFound,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Career Not Found"
+                                        }
+                        );
                 }
                 else
                 {
@@ -202,15 +193,15 @@ namespace WEB.API.Jarvis.Controllers
             {
                 if (EnrollmentExists(enrollment.EnrollmentId))
                 {
-                LoggerService.LogException(methodName, Request, ex.Message, startTime);
-                LoggerService.LogActionEnd(methodName, startTime);
-                return StatusCode(StatusCodes.Status409Conflict,
-                                    new Response
-                                    {
-                                        Status = "Not found",
-                                        Message = "Enrollment Conflict With Db Exception"
-                                    }
-                    );
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status409Conflict,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Enrollment Conflict With Db Exception"
+                                        }
+                        );
                 }
 
             }
@@ -247,7 +238,7 @@ namespace WEB.API.Jarvis.Controllers
 
             var enrollment = await _context.Enrollments.FirstOrDefaultAsync(x => x.Email == email);
 
-            if (enrollment != null )
+            if (enrollment != null)
             {
                 LoggerService.LogActionEnd(methodName, startTime);
                 return StatusCode(StatusCodes.Status400BadRequest,
@@ -259,7 +250,7 @@ namespace WEB.API.Jarvis.Controllers
                 );
             }
 
-         
+
             try
             {
                 var message = new Message(new string[] { email! }, "Vuelvete Parte de Nosotros", EmailTemplates.GetEnrollmentEmailTemplate(_configuration["FrontURls:EnrrolmentForm"]!));
@@ -326,6 +317,84 @@ namespace WEB.API.Jarvis.Controllers
                                     Message = "Enrollment Deleted Sucessfully"
                                 }
                 );
+        }
+
+        // POST: api/Enrollments
+        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [HttpPost("UpdateStatusEnrollment")]
+        public async Task<ActionResult> UpdateStatusEnrollment([FromBody] UpdateStateStudentParameters parameters)
+        {
+            string methodName = "UpdateStatusEnrollment";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (parameters.enrollmentId == Guid.Empty)
+            {
+                LoggerService.LogException(methodName, Request, "Enrollment Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status406NotAcceptable,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The Enrollment was not send"
+                                    }
+                    );
+            }
+            Enrollment enrollment = await _context.Enrollments.FindAsync(parameters.enrollmentId);
+            AcademicStatus academicStatus = await _context.AcademicStatuses.Where(academic => academic.AcademicStateName == "Activo").FirstAsync();
+
+            enrollment.IsAdmitted = parameters.state;
+
+            enrollment.UpdatedDate = DateTime.Now;
+            enrollment.UpdatedBy = Request.Headers["Requester-Jarvis"].ToString();
+            Student student = new Student()
+            {
+                StudentId = "123",
+                CareerId = enrollment.CareerId,
+                EnrollmentId = enrollment.EnrollmentId,
+                AcademicStatusId = academicStatus.AcademicStatusId,
+                CreatedBy = Request.Headers["Requester-Jarvis"].ToString(),
+                CreatedDate = DateTime.Now,
+            };
+
+            _context.Entry(enrollment).State = EntityState.Modified;
+            _context.Students.Add(student);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                if (EnrollmentExists(enrollment.EnrollmentId))
+                {
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status409Conflict,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Enrollment Conflict With Db Exception"
+                                        }
+                        );
+                }
+
+            }
+
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status201Created,
+                                new Response
+                                {
+                                    Status = "Created",
+                                    Message = "Student Created Sucessfully"
+                                }
+                );
+        }
+
+        public class UpdateStateStudentParameters
+        {
+            public Guid enrollmentId { get; set; }
+            public bool state { get; set; }
         }
 
         private bool EnrollmentExists(Guid id)

@@ -25,5 +25,9 @@ public partial class Career
 
     public virtual AcademicArea? AcademicArea { get; set; }
 
+    public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+
+    public virtual ICollection<Pensum> Pensums { get; set; } = new List<Pensum>();
+
     public virtual ICollection<Student> Students { get; set; } = new List<Student>();
 }

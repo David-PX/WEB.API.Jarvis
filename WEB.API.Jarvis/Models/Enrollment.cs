@@ -11,8 +11,6 @@ public partial class Enrollment
 
     public string? LastName { get; set; }
 
-    public string? Email { get; set; }
-
     public DateTime? BirthDate { get; set; }
 
     public string? Gender { get; set; }
@@ -38,6 +36,14 @@ public partial class Enrollment
     public DateTime? DeletedDate { get; set; }
 
     public string? DeletedBy { get; set; }
+
+    public string? Email { get; set; }
+
+    public bool? IsAdmitted { get; set; }
+
+    public Guid? CareerId { get; set; }
+
+    public virtual Career? Career { get; set; }
 
     public virtual City? City { get; set; }
 
