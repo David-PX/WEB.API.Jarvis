@@ -7,6 +7,7 @@ using Jarvis.WEB.API.Context;
 using Jarvis.WEB.API.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WEB.API.Jarvis.Context;
@@ -21,10 +22,12 @@ namespace WEB.API.Jarvis.Controllers
     public class StudentsController : ControllerBase
     {
         private readonly JarvisFullDbContext _context;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public StudentsController(JarvisFullDbContext context)
+        public StudentsController(JarvisFullDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _userManager = userManager;
         }
 
         // GET: api/Students
@@ -54,7 +57,7 @@ namespace WEB.API.Jarvis.Controllers
         // GET: api/Students/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Student>> GetStudent(string id)
-        {
+       {
             string methodName = "GetStudents";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
@@ -75,19 +78,23 @@ namespace WEB.API.Jarvis.Controllers
 
             if (student == null)
             {
-                LoggerService.LogException(methodName, Request, "Student Not Found", startTime);
-                LoggerService.LogActionEnd(methodName, startTime);
-                return StatusCode(StatusCodes.Status404NotFound,
-                                    new Response
-                                    {
-                                        Status = "Not found",
-                                        Message = "Student Not Found"
-                                    }
-                    );
+                var user = await _userManager.FindByEmailAsync(id);
+                if (user == null)
+                {
+                    LoggerService.LogException(methodName, Request, "Student Not Found", startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status404NotFound,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Student Not Found"
+                                        }
+                        );
+                }
+                student = await _context.Students.FirstOrDefaultAsync(x => x.UserId == user.Id);
             }
 
             student.Enrollment = _context.Enrollments.FirstOrDefault(x => x.EnrollmentId == student.EnrollmentId);
-
             LoggerService.LogActionEnd(methodName, startTime);
             return student;
         }
