@@ -253,7 +253,7 @@ namespace WEB.API.Jarvis.Controllers
 
             try
             {
-                var message = new Message(new string[] { email! }, "Vuelvete Parte de Nosotros", EmailTemplates.GetEnrollmentEmailTemplate(_configuration["FrontURls:EnrrolmentForm"]!));
+                var message = new Message(new string[] { email! }, "Vuelvete Parte de Nosotros", EmailTemplates.GetEnrollmentEmailTemplate(_configuration["FrontURls:EnrrolmentForm"]!, email));
 
                 _emailService.SendEmail(message);
 

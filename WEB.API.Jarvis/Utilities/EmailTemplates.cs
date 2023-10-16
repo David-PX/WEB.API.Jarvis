@@ -384,7 +384,7 @@
 
 
 
-        public static string GetEnrollmentEmailTemplate(string formLink)
+        public static string GetEnrollmentEmailTemplate(string formLink, string email)
         {
             string emailMessage = $@"
 				  <!DOCTYPE html>
@@ -442,7 +442,7 @@
                             <h1>¡Gracias por inscribirte!</h1>
                             <p>Estimado usuario,</p>
                             <p>Has completado el primer paso de tu inscripción. Ahora, solo tienes que llenar el formulario de inscripción final haciendo clic en el siguiente enlace:</p>
-                            <p><a href=""{formLink}"">Formulario de Inscripción</a></p>
+                            <p><a href=""{formLink}/{email}/basic-info"">Formulario de Inscripción</a></p>
                             <p>Si tienes alguna pregunta o necesitas asistencia, no dudes en ponerte en contacto con nuestro equipo de soporte.</p>
                             <p>¡Esperamos verte pronto!</p>
                         </div>
