@@ -130,7 +130,7 @@ namespace WEB.API.Jarvis.Controllers
         }   
 
         [HttpPost("registerUser")]
-        [Authorize(Roles = "GENERAL_ADMIN")]
+        //[Authorize(Roles = "GENERAL_ADMIN")]
         public async Task<IActionResult> Register([FromBody] RegisterUser user)
         {
             string methodName = "Register";

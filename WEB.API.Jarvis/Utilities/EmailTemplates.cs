@@ -511,7 +511,7 @@
                             <p>Estimado usuario,</p>
                             <p>Es un placer darte la bienvenida a nuestra institución. Te informamos que tu solicitud de inscripción ha sido aprobada y estás oficialmente aceptado en nuestro programa.</p>
                             <p>A continuación, te proporcionamos tus credenciales de inicio de sesión:</p>
-                            <p><strong>Nombre de usuario:</strong> {email}</p>
+                            <p><strong>Tu ID:</strong> {email}</p>
                             <p><strong>Contraseña:</strong> {pwd}</p>
                             <p>Por favor, inicia sesión en tu cuenta utilizando las credenciales proporcionadas. Si tienes alguna pregunta o necesitas asistencia, no dudes en ponerte en contacto con nuestro equipo de soporte.</p>
                             <p>¡Te damos la bienvenida y esperamos que tengas una experiencia educativa excepcional con nosotros!</p>

@@ -243,6 +243,16 @@ namespace WEB.API.Jarvis.Controllers
             }
 
             Enrollment enrollment = await _context.Enrollments.FirstOrDefaultAsync(x => x.Email == academicInfo.Email);
+            if (enrollment == null)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest,
+                              new Response
+                              {
+                                  Status = "Error",
+                                  Message = "We dont found a staring onboarding with this user"
+                              }
+              );
+            }
             enrollment.CareerId = academicInfo.CareerId;
             enrollment.UpdatedDate = DateTime.Now;
 
@@ -441,16 +451,35 @@ namespace WEB.API.Jarvis.Controllers
                     }
 
                     await _userManager.AddToRoleAsync(newUser, "STUDENT");
+
+                    Student student = new Student()
+                    {
+                        StudentId = "123",
+                        CareerId = enrollment.CareerId,
+                        EnrollmentId = enrollment.EnrollmentId,
+                        AcademicStatusId = academicStatus?.AcademicStatusId,
+                        UserId = newUser.Id,
+                        CreatedBy = Request.Headers["Requester-Jarvis"].ToString(),
+                        CreatedDate = DateTime.Now,
+                    };
+
+                    _context.Entry(enrollment).State = EntityState.Modified;
+                    _context.Students.Add(student);
+
                     await _context.SaveChangesAsync();
+
+                    var createdUser = await _context.Students.FirstOrDefaultAsync(x => x.EnrollmentId == enrollment.EnrollmentId);
+
+
                     //Add Toke to verify the email...
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
                     //var confirmationLink = Url.Action(nameof(ConfirmEmail), "Authentication", new { token, email = newUser.Email }, Request.Scheme);
-                    var message = new Message(new string[] { enrollment.Email! }, "Activate Account Email", EmailTemplates.GetAdmittedStudentLoginTemplate(provisionalPwd, enrollment.Email));
+                    var message = new Message(new string[] { enrollment.Email! }, "Activate Account Email", EmailTemplates.GetAdmittedStudentLoginTemplate(provisionalPwd,  createdUser.StudentId));
                     _emailService.SendEmail(message);
 
-                    //LoggerService.LogActionEnd(methodName, startTime);
-                    //return StatusCode(StatusCodes.Status201Created,
-                    //        new Response { Status = "Success", Message = "User Created Successfully!" });
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status201Created,
+                            new Response { Status = "Success", Message = "User Created Successfully!" });
                 }
                 catch (Exception ex)
                 {
@@ -465,24 +494,6 @@ namespace WEB.API.Jarvis.Controllers
                         );
                 }
             }
-
-
-            Student student = new Student()
-                {
-                    StudentId = "123",
-                    CareerId = enrollment.CareerId,
-                    EnrollmentId = enrollment.EnrollmentId,
-                    AcademicStatusId = academicStatus?.AcademicStatusId,
-                    UserId = newUser.Id,
-                    CreatedBy = Request.Headers["Requester-Jarvis"].ToString(),
-                    CreatedDate = DateTime.Now,
-                };
-
-                _context.Entry(enrollment).State = EntityState.Modified;
-                _context.Students.Add(student);
-
-
-          
 
             try
             {

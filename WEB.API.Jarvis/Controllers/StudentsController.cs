@@ -80,7 +80,7 @@ namespace WEB.API.Jarvis.Controllers
             {
                 var user = await _userManager.FindByEmailAsync(id);
                 if (user == null)
-                {
+                { 
                     LoggerService.LogException(methodName, Request, "Student Not Found", startTime);
                     LoggerService.LogActionEnd(methodName, startTime);
                     return StatusCode(StatusCodes.Status404NotFound,
