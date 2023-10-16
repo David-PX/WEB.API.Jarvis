@@ -175,6 +175,7 @@ namespace WEB.API.Jarvis.Controllers
 
         }
 
+
         [HttpGet("ConfirmEmail")]
         public async Task<IActionResult> ConfirmEmail(string token, string email)
         {

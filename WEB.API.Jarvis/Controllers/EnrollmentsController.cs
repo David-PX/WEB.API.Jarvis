@@ -3,6 +3,7 @@ using Jarvis.WEB.API.Models;
 using Jarvis.WEB.API.Utilities;
 using Mail.Service.Models;
 using Mail.Service.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WEB.API.Jarvis.Models;
@@ -18,12 +19,17 @@ namespace WEB.API.Jarvis.Controllers
         private readonly JarvisFullDbContext _context;
         private readonly IEmailService _emailService;
         private readonly IConfiguration _configuration;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public EnrollmentsController(JarvisFullDbContext context, IEmailService emailService, IConfiguration configuration)
+
+        public EnrollmentsController(JarvisFullDbContext context, IEmailService emailService, IConfiguration configuration, RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager)
         {
             _context = context;
             _emailService = emailService;
             _configuration = configuration;
+            _roleManager = roleManager;
+            _userManager = userManager;
         }
 
         // GET: api/Enrollments
@@ -163,7 +169,7 @@ namespace WEB.API.Jarvis.Controllers
         [HttpPost]
         public async Task<ActionResult<Enrollment>> PostEnrollment(Enrollment enrollment)
         {
-            string methodName = "GetEnrollments";
+            string methodName = "PostEnrollment";
             DateTime startTime = DateTime.Now;
             LoggerService.LogActionStart(methodName, Request);
 
@@ -185,6 +191,62 @@ namespace WEB.API.Jarvis.Controllers
             enrollment.CreatedDate = DateTime.Now;
 
             _context.Enrollments.Add(enrollment);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                if (EnrollmentExists(enrollment.EnrollmentId))
+                {
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status409Conflict,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Enrollment Conflict With Db Exception"
+                                        }
+                        );
+                }
+
+            }
+
+            LoggerService.LogActionEnd(methodName, startTime);
+            return StatusCode(StatusCodes.Status201Created,
+                                new Response
+                                {
+                                    Status = "Created",
+                                    Message = "Enrollment Created Sucessfully"
+                                }
+                );
+        }
+
+        [HttpPost("academicInfo")]
+        public async Task<ActionResult<Enrollment>> PostEnrollmentAcademicInfo(Enrollment academicInfo)
+        {
+            string methodName = "PostEnrollmentAcademicInfo";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            if (_context.Enrollments == null)
+            {
+                LoggerService.LogException(methodName, Request, "Enrollment Bad Request", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status406NotAcceptable,
+                                    new Response
+                                    {
+                                        Status = "Bad Request",
+                                        Message = "The Enrollment was not send"
+                                    }
+                    );
+            }
+
+            Enrollment enrollment = await _context.Enrollments.FirstOrDefaultAsync(x => x.Email == academicInfo.Email);
+            enrollment.CareerId = academicInfo.CareerId;
+            enrollment.UpdatedDate = DateTime.Now;
+
+            _context.Enrollments.Update(enrollment);
             try
             {
                 await _context.SaveChangesAsync();
@@ -381,6 +443,63 @@ namespace WEB.API.Jarvis.Controllers
 
             }
 
+
+            if (enrollment.IsAdmitted == true)
+            {
+                try
+                {
+                    var userExist = await _userManager.FindByEmailAsync(enrollment.Email);
+                    if (userExist != null)
+                    {
+                        LoggerService.LogActionEnd(methodName, startTime);
+                        return StatusCode(StatusCodes.Status403Forbidden,
+                            new Response { Status = "Error", Message = "User already exists!" });
+                    }
+
+                    IdentityUser newUser = new()
+                    {
+                        Email = enrollment.Email,
+                        SecurityStamp = Guid.NewGuid().ToString(),
+                        UserName = enrollment.Email
+                    };
+
+                    string provisionalPwd = PwdGenerator.GetRandomPassword();
+
+                    var result = await _userManager.CreateAsync(newUser, provisionalPwd);
+                    if (!result.Succeeded)
+                    {
+                        LoggerService.LogActionEnd(methodName, startTime);
+                        return StatusCode(StatusCodes.Status500InternalServerError,
+                            new Response { Status = "Error", Message = "User Failed to Create!" });
+                    }
+
+                    await _userManager.AddToRoleAsync(newUser, "STUDENT");
+                    await _context.SaveChangesAsync();
+                    //Add Toke to verify the email...
+                    var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
+                    //var confirmationLink = Url.Action(nameof(ConfirmEmail), "Authentication", new { token, email = newUser.Email }, Request.Scheme);
+                    var message = new Message(new string[] { enrollment.Email! }, "Activate Account Email", EmailTemplates.GetAdmittedStudentLoginTemplate(provisionalPwd, enrollment.Email));
+                    _emailService.SendEmail(message);
+
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status201Created,
+                            new Response { Status = "Success", Message = "User Created Successfully!" });
+                }
+                catch(Exception ex)
+                {
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status409Conflict,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Enrollment Conflict With Db Exception"
+                                        }
+                        );
+                }
+            }
+
+           
             LoggerService.LogActionEnd(methodName, startTime);
             return StatusCode(StatusCodes.Status201Created,
                                 new Response

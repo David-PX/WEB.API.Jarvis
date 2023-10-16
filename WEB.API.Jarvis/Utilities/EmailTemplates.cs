@@ -382,8 +382,6 @@
             return emailMessage;
         }
 
-
-
         public static string GetEnrollmentEmailTemplate(string formLink, string email)
         {
             string emailMessage = $@"
@@ -452,6 +450,78 @@
                 ";
 
             return emailMessage;
+        }
+
+        public static string GetAdmittedStudentLoginTemplate(string pwd, string email)
+        {
+            string emailTemplate = $@"
+                    <!DOCTYPE html>
+                    <html lang=""en"">
+                    <head>
+                        <meta charset=""UTF-8"">
+                        <meta http-equiv=""X-UA-Compatible"" content=""IE=edge"">
+                        <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+                        <title>Bienvenido a Nuestra Institución</title>
+                        <style>
+                            /* Estilos de la plantilla */
+                            body {{
+                                font-family: Arial, sans-serif;
+                                margin: 0;
+                                padding: 0;
+                                background-color: #f4f4f4;
+                            }}
+                            .container {{
+                                max-width: 600px;
+                                margin: 0 auto;
+                                padding: 20px;
+                                background-color: #ffffff;
+                                border-radius: 5px;
+                                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                            }}
+                            h1 {{
+                                color: #333333;
+                            }}
+                            p {{
+                                font-size: 16px;
+                                color: #666666;
+                            }}
+                            a {{
+                                text-decoration: none;
+                                color: #007bff;
+                            }}
+                            /* Estilo para el encabezado */
+                            .header {{
+                                background-color: #3A57E8;
+                                color: #ffffff;
+                                padding: 20px;
+                                text-align: center;
+                            }}
+                            .header h2 {{
+                                margin: 0;
+                                font-size: 24px;
+                            }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class=""container"">
+                            <div class=""header"">
+                                <h2>Bienvenido a Nuestra Institución</h2>
+                            </div>
+                            <h1>¡Felicitaciones por ser aceptado!</h1>
+                            <p>Estimado usuario,</p>
+                            <p>Es un placer darte la bienvenida a nuestra institución. Te informamos que tu solicitud de inscripción ha sido aprobada y estás oficialmente aceptado en nuestro programa.</p>
+                            <p>A continuación, te proporcionamos tus credenciales de inicio de sesión:</p>
+                            <p><strong>Nombre de usuario:</strong> {email}</p>
+                            <p><strong>Contraseña:</strong> {pwd}</p>
+                            <p>Por favor, inicia sesión en tu cuenta utilizando las credenciales proporcionadas. Si tienes alguna pregunta o necesitas asistencia, no dudes en ponerte en contacto con nuestro equipo de soporte.</p>
+                            <p>¡Te damos la bienvenida y esperamos que tengas una experiencia educativa excepcional con nosotros!</p>
+                        </div>
+                    </body>
+                    </html>
+                    ";
+
+
+            return emailTemplate;
         }
     }
 }

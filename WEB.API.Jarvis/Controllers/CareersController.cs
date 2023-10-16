@@ -16,7 +16,7 @@ namespace WEB.API.Jarvis.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "GENERAL_ADMIN")]
+    //[Authorize(Roles = "GENERAL_ADMIN")]
     public class CareersController : ControllerBase
     {
         private readonly JarvisFullDbContext _context;
