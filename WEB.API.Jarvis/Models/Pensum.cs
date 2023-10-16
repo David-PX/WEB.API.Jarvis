@@ -15,7 +15,7 @@ public partial class Pensum
 
     public int? TotalTrimester { get; set; }
 
-    public Guid? CarrerId { get; set; }
+    public string? CarrerId { get; set; }
 
     public virtual Career? Carrer { get; set; }
 }
