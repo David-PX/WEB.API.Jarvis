@@ -270,7 +270,7 @@ namespace WEB.API.Jarvis.Controllers
                 student = await _generalContext.Students.FirstOrDefaultAsync(x => x.StudentId ==  loginModel.ID);
                 user = await _userManager.FindByIdAsync(student.UserId);
             }
-            else if (loginModel.ID == "" && loginModel.Email.Length > 0)
+            else if ((loginModel.ID == "" || loginModel.ID == null) && loginModel.Email.Length > 0)
             {
                user = await _userManager.FindByEmailAsync(loginModel.Email);
             }
