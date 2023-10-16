@@ -403,45 +403,25 @@ namespace WEB.API.Jarvis.Controllers
                     );
             }
             Enrollment enrollment = await _context.Enrollments.FindAsync(parameters.enrollmentId);
-            AcademicStatus academicStatus = await _context.AcademicStatuses.Where(academic => academic.AcademicStateName == "Activo").FirstAsync();
 
-            enrollment.IsAdmitted = parameters.state;
+            AcademicStatus? academicStatus = await _context.AcademicStatuses.FirstOrDefaultAsync(academic => academic.AcademicStateName == "Activo");
 
-            enrollment.UpdatedDate = DateTime.Now;
-            enrollment.UpdatedBy = Request.Headers["Requester-Jarvis"].ToString();
-            Student student = new Student()
-            {
-                StudentId = "123",
-                CareerId = enrollment.CareerId,
-                EnrollmentId = enrollment.EnrollmentId,
-                AcademicStatusId = academicStatus.AcademicStatusId,
-                CreatedBy = Request.Headers["Requester-Jarvis"].ToString(),
-                CreatedDate = DateTime.Now,
-            };
+                enrollment.IsAdmitted = parameters.state;
 
-            _context.Entry(enrollment).State = EntityState.Modified;
-            _context.Students.Add(student);
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException ex)
-            {
-                if (EnrollmentExists(enrollment.EnrollmentId))
+                enrollment.UpdatedDate = DateTime.Now;
+                enrollment.UpdatedBy = Request.Headers["Requester-Jarvis"].ToString();
+                Student student = new Student()
                 {
-                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
-                    LoggerService.LogActionEnd(methodName, startTime);
-                    return StatusCode(StatusCodes.Status409Conflict,
-                                        new Response
-                                        {
-                                            Status = "Not found",
-                                            Message = "Enrollment Conflict With Db Exception"
-                                        }
-                        );
-                }
+                    StudentId = "123",
+                    CareerId = enrollment.CareerId,
+                    EnrollmentId = enrollment.EnrollmentId,
+                    AcademicStatusId = academicStatus?.AcademicStatusId,
+                    CreatedBy = Request.Headers["Requester-Jarvis"].ToString(),
+                    CreatedDate = DateTime.Now,
+                };
 
-            }
+                _context.Entry(enrollment).State = EntityState.Modified;
+                _context.Students.Add(student);
 
 
             if (enrollment.IsAdmitted == true)
@@ -499,7 +479,28 @@ namespace WEB.API.Jarvis.Controllers
                 }
             }
 
-           
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                if (EnrollmentExists(enrollment.EnrollmentId))
+                {
+                    LoggerService.LogException(methodName, Request, ex.Message, startTime);
+                    LoggerService.LogActionEnd(methodName, startTime);
+                    return StatusCode(StatusCodes.Status409Conflict,
+                                        new Response
+                                        {
+                                            Status = "Not found",
+                                            Message = "Enrollment Conflict With Db Exception"
+                                        }
+                        );
+                }
+
+            }
+
+
             LoggerService.LogActionEnd(methodName, startTime);
             return StatusCode(StatusCodes.Status201Created,
                                 new Response
