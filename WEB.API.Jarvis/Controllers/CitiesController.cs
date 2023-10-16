@@ -32,7 +32,7 @@ namespace WEB.API.Jarvis.Controllers
 
         // GET: api/Cities
         [HttpGet]
-        public async Task<ActionResult<CityDTO>> GetCities()
+        public async Task<ActionResult<IEnumerable<City>>> GetCities()
         {
             string methodName = "GetCities";
             DateTime startTime = DateTime.Now;
@@ -51,9 +51,8 @@ namespace WEB.API.Jarvis.Controllers
                                     }
                     );
             }
-            var citiesDTO = _mapper.Map<CityDTO>(cities);
             LoggerService.LogActionEnd(methodName, startTime);
-            return citiesDTO;
+            return cities;
         }
 
         // GET: api/Cities/5
