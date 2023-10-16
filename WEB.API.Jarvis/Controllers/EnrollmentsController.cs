@@ -410,20 +410,7 @@ namespace WEB.API.Jarvis.Controllers
 
                 enrollment.UpdatedDate = DateTime.Now;
                 enrollment.UpdatedBy = Request.Headers["Requester-Jarvis"].ToString();
-                Student student = new Student()
-                {
-                    StudentId = "123",
-                    CareerId = enrollment.CareerId,
-                    EnrollmentId = enrollment.EnrollmentId,
-                    AcademicStatusId = academicStatus?.AcademicStatusId,
-                    CreatedBy = Request.Headers["Requester-Jarvis"].ToString(),
-                    CreatedDate = DateTime.Now,
-                };
-
-                _context.Entry(enrollment).State = EntityState.Modified;
-                _context.Students.Add(student);
-
-
+            IdentityUser newUser = null;
             if (enrollment.IsAdmitted == true)
             {
                 try
@@ -436,7 +423,7 @@ namespace WEB.API.Jarvis.Controllers
                             new Response { Status = "Error", Message = "User already exists!" });
                     }
 
-                    IdentityUser newUser = new()
+                    newUser = new()
                     {
                         Email = enrollment.Email,
                         SecurityStamp = Guid.NewGuid().ToString(),
@@ -461,11 +448,11 @@ namespace WEB.API.Jarvis.Controllers
                     var message = new Message(new string[] { enrollment.Email! }, "Activate Account Email", EmailTemplates.GetAdmittedStudentLoginTemplate(provisionalPwd, enrollment.Email));
                     _emailService.SendEmail(message);
 
-                    LoggerService.LogActionEnd(methodName, startTime);
-                    return StatusCode(StatusCodes.Status201Created,
-                            new Response { Status = "Success", Message = "User Created Successfully!" });
+                    //LoggerService.LogActionEnd(methodName, startTime);
+                    //return StatusCode(StatusCodes.Status201Created,
+                    //        new Response { Status = "Success", Message = "User Created Successfully!" });
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     LoggerService.LogException(methodName, Request, ex.Message, startTime);
                     LoggerService.LogActionEnd(methodName, startTime);
@@ -478,6 +465,24 @@ namespace WEB.API.Jarvis.Controllers
                         );
                 }
             }
+
+
+            Student student = new Student()
+                {
+                    StudentId = "123",
+                    CareerId = enrollment.CareerId,
+                    EnrollmentId = enrollment.EnrollmentId,
+                    AcademicStatusId = academicStatus?.AcademicStatusId,
+                    UserId = newUser.Id,
+                    CreatedBy = Request.Headers["Requester-Jarvis"].ToString(),
+                    CreatedDate = DateTime.Now,
+                };
+
+                _context.Entry(enrollment).State = EntityState.Modified;
+                _context.Students.Add(student);
+
+
+          
 
             try
             {
