@@ -27,7 +27,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<JarvisDbContext>()
     .AddDefaultTokenProviders();
 
-builder.Services.Configure<IdentityOptions>(options => options.SignIn.RequireConfirmedEmail = true);
+builder.Services.Configure<IdentityOptions>(options => options.SignIn.RequireConfirmedEmail = false);
 
 builder.Services.AddAuthentication(options =>
 {
