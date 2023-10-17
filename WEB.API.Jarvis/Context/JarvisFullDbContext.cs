@@ -803,17 +803,15 @@ public partial class JarvisFullDbContext : DbContext
 
         modelBuilder.Entity<PensumSubject>(entity =>
         {
-            entity.HasNoKey();
+            entity.HasKey(k => new { k.SubjectId, k.PensumId });
 
-            entity.Property(e => e.PensumId).HasColumnName("PensumID");
-            entity.Property(e => e.SubjectId)
-                .HasMaxLength(7)
-                .IsUnicode(false)
-                .HasColumnName("SubjectID");
+            entity.HasOne(e => e.Subject)
+                .WithMany(su => su.PensumSubjects)
+                .HasForeignKey(e => e.SubjectId);
 
-            entity.HasOne(d => d.Pensum).WithMany()
-                .HasForeignKey(d => d.PensumId)
-                .HasConstraintName("FK_PensumSubjects.PensumID");
+            entity.HasOne(d => d.Pensum)
+                .WithMany(e => e.PensumSubjects)
+                .HasForeignKey(d => d.PensumId);
         });
 
         modelBuilder.Entity<Report>(entity =>

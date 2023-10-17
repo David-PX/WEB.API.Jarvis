@@ -17,5 +17,11 @@ public partial class Pensum
 
     public string? CarrerId { get; set; }
 
+    public bool isCurrent { get; set; }
+
     public virtual Career? Carrer { get; set; }
+
+    public List<PensumSubject>? PensumSubjects { get; set; }
+
+
 }

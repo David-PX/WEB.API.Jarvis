@@ -32,4 +32,6 @@ public partial class Subject
     public virtual ICollection<Section> Sections { get; set; } = new List<Section>();
 
     public virtual SubjectsType? SubjectType { get; set; }
+
+    public List<PensumSubject>? PensumSubjects { get; set; }
 }

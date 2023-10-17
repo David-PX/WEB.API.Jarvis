@@ -12,4 +12,5 @@ public partial class PensumSubject
     public int? TrimesterNumber { get; set; }
 
     public virtual Pensum? Pensum { get; set; }
+    public virtual Subject? Subject { get; set; }
 }

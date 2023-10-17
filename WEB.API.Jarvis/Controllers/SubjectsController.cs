@@ -16,7 +16,7 @@ namespace WEB.API.Jarvis.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "GENERAL_ADMIN")]
+    //[Authorize(Roles = "GENERAL_ADMIN")]
     public class SubjectsController : ControllerBase
     {
         private readonly JarvisFullDbContext _context;
@@ -88,6 +88,66 @@ namespace WEB.API.Jarvis.Controllers
             LoggerService.LogActionEnd(methodName, startTime);
             return subject;
         }
+
+        // GET: api/Subjects/5
+        [HttpGet("student/{id}")]
+        public async Task<ActionResult<List<Pensum>>> GetPensumByStudenId(string id)
+        {
+            string methodName = "GetSubjects";
+            DateTime startTime = DateTime.Now;
+            LoggerService.LogActionStart(methodName, Request);
+
+            var student = await _context.Students.FirstOrDefaultAsync(x => x.StudentId == id);
+
+            if (student == null)
+            {
+                LoggerService.LogException(methodName, Request, "Student Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Student Not Found"
+                                    }
+                    );
+            }
+
+            if (_context.Subjects == null)
+            {
+                LoggerService.LogException(methodName, Request, "Career Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Career Not Found"
+                                    }
+                    );
+            }
+
+            var subject = await _context.Pensums
+                .Include(x => x.PensumSubjects)
+                .ThenInclude(x => x.Subject)
+                .Where(x => x.CarrerId == student.CareerId && x.isCurrent == true)
+                .ToListAsync();
+
+            if (subject == null)
+            {
+                LoggerService.LogException(methodName, Request, "Subjects Not Found", startTime);
+                LoggerService.LogActionEnd(methodName, startTime);
+                return StatusCode(StatusCodes.Status404NotFound,
+                                    new Response
+                                    {
+                                        Status = "Not found",
+                                        Message = "Subjects Not Found"
+                                    }
+                    );
+            }
+
+            LoggerService.LogActionEnd(methodName, startTime);
+            return subject;
+        }
+
 
         // PUT: api/Subjects/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
