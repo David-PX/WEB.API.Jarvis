@@ -47,7 +47,7 @@ namespace WEB.API.Jarvis.Controllers
                     );
             }
             LoggerService.LogActionEnd(methodName, startTime);
-            return await _context.Sections.Include(x => x.Teacher).Where(x => x.DeletedDate == null).ToListAsync();
+            return await _context.Sections.Include(x => x.Teacher).Include(x => x.Subject).Where(x => x.DeletedDate == null).ToListAsync();
         }
 
         // GET: api/Sections/5

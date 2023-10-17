@@ -974,9 +974,7 @@ public partial class JarvisFullDbContext : DbContext
 
         modelBuilder.Entity<SectionStudent>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("SectionStudent");
+            entity.HasKey(k => new { k.StudentId, k.SectionId });
 
             entity.HasIndex(e => new { e.SectionId, e.StudentId }, "PK_FK_SectionStudent");
 
