@@ -20,13 +20,21 @@ namespace Jarvis.WEB.API.Controllers
 
         // GET api/sectionstudents/{studentId}
         [HttpGet("{studentId}")]
-        public async Task<IActionResult> GetSectionStudentsByStudentId(string studentId)
+        public async Task<ActionResult<IEnumerable<Section>>> GetSectionStudentsByStudentId(string studentId)
         {
-            var sectionStudents = await _context.SectionStudents
+            var sectionStudents = _context.SectionStudents
                 .Include(ss => ss.Section)
-                .Where(ss => ss.StudentId == studentId)
-                .ToListAsync();
+                .Where(ss => ss.StudentId == studentId);
 
+            if(sectionStudents != null)
+            {
+                sectionStudents = _context.SectionStudents
+                .Include(ss => ss.Section)
+                .ThenInclude(te => te.Teacher)
+                .Include(ss => ss.Section)
+                .ThenInclude(su => su.Subject)
+                .Where(ss => ss.StudentId == studentId);
+            }
 
             return StatusCode(StatusCodes.Status200OK, sectionStudents);
         }
