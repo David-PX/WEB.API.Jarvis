@@ -16,7 +16,7 @@ namespace WEB.API.Jarvis.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "GENERAL_ADMIN")]
+    //[Authorize(Roles = "GENERAL_ADMIN")]
     public class SectionsController : ControllerBase
     {
         private readonly JarvisFullDbContext _context;
@@ -47,7 +47,7 @@ namespace WEB.API.Jarvis.Controllers
                     );
             }
             LoggerService.LogActionEnd(methodName, startTime);
-            return await _context.Sections.Where(x => x.DeletedDate == null).ToListAsync();
+            return await _context.Sections.Include(x => x.Teacher).Where(x => x.DeletedDate == null).ToListAsync();
         }
 
         // GET: api/Sections/5
